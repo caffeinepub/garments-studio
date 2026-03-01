@@ -1,0 +1,54 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Admin Panel for Product Management",
+  "requirements": [
+    {
+      "id": "REQ-23",
+      "summary": "Build an Admin Panel page at /admin for managing products with add, edit, and delete capabilities",
+      "acceptanceCriteria": [
+        "A route /admin renders the Admin Panel page and is accessible via direct URL navigation",
+        "The page lists all products fetched from the backend with name, category, price, stock, and sizes visible",
+        "Clicking 'Add Product' opens a form/modal with all required fields; submitting calls addProduct on the backend",
+        "Clicking 'Edit' on a product pre-fills the form with that product's data; submitting calls updateProduct on the backend",
+        "Clicking 'Delete' on a product shows a confirmation prompt; confirming calls deleteProduct on the backend",
+        "After any successful mutation, the product list refreshes to reflect the change",
+        "Form validates that required fields (name, category, price, stock) are not empty before submission",
+        "The page uses the existing warm neutral colour palette and typography (Cormorant Garamond / Jost) consistent with the rest of the app"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register the /admin route in the router configuration. Add a new Route for path='/admin' that lazy-loads the Admin page component, nested under the Layout root route alongside the existing home, catalog, cart, checkout, and confirmation routes."
+        },
+        {
+          "path": "frontend/src/pages/Admin.tsx",
+          "operation": "create",
+          "description": "Create the Admin Panel page component. Display a heading 'Product Management'. Fetch all products using the existing useProducts hook from useQueries.ts. Render products in a responsive table or card grid showing product name, category (using categoryLabels from utils.ts), price (formatted using formatPrice from utils.ts), stock quantity, and available sizes. Include an 'Add Product' button that opens a form/modal. For each product row, add 'Edit' and 'Delete' action buttons. Use the existing useAddProduct, useUpdateProduct, and useDeleteProduct mutations from useQueries.ts (ensure these mutations are added to the queries file). Handle loading states with skeleton UI and error states with error messages. Apply Tailwind classes consistent with the existing warm neutral theme (font-display for headings, font-sans for body text, accent colors for buttons). The form/modal should include inputs for name (text), category (select dropdown with options: Female Dresses, Male Shirts, Male T-Shirts, Kids Apparel mapped to Category enum values), description (textarea), price (number), available sizes (multi-select or comma-separated text input that converts to array), stock quantity (number), and image filename (text). Validate required fields before submission. On successful mutation, invalidate the products query to refresh the list. For delete action, show a confirmation dialog (using a shadcn/ui AlertDialog or native confirm) before calling deleteProduct."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add three new mutation hooks: useAddProduct, useUpdateProduct, and useDeleteProduct. Each hook should use useMutation from React Query and call the corresponding backend method (addProduct, updateProduct, deleteProduct) via the actor. Accept parameters matching the backend interface signature (for addProduct and updateProduct: name, category, description, price, sizes array, stock as BigInt, image filename; for deleteProduct: product id as BigInt). On success, invalidate the 'products' query key to trigger a refetch of the product list. Return the mutation object so the Admin page can access mutate, isPending, and error states."
+        }
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "summary": "Add an 'Admin' navigation link in the Header that routes to /admin",
+      "acceptanceCriteria": [
+        "A navigation link labelled 'Admin' appears in the desktop header nav and the mobile collapsible menu",
+        "Clicking the link navigates to /admin",
+        "The link uses the same font, colour, and hover style as the existing category navigation links"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Add a new 'Admin' link to the desktop navigation (the <nav> element containing the category links). Insert a Link component with to='/admin' and children='Admin' positioned after the existing category links. Apply the same Tailwind classes used by the category links (text-sm, font-sans, hover states, etc.). Also add the same 'Admin' link to the mobile menu section (the collapsible menu rendered when isMobileMenuOpen is true), ensuring it uses identical styling to the mobile category links. Close the mobile menu when the Admin link is clicked."
+        }
+      ]
+    }
+  ]
+}

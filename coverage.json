@@ -1,0 +1,63 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-03-01T13:56:02.653Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 3,
+    "implemented": 2,
+    "items": [
+      {
+        "id": "REQ-22",
+        "summary": "Add backend CRUD operations to support the admin panel: ensure addProduct, updateProduct, and deleteProduct functions exist in the main actor and are callable from the frontend. Each product must support: id, name, category, description, price, availableSizes (array of strings), stockQuantity, and imageFilename.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-23",
+        "summary": "Build an Admin Panel page at the route /admin in the frontend. The page must display a full list of all existing products in a table or card list showing product name, category, price, stock, and sizes. The page must include: (1) an 'Add Product' form/modal with fields for name, category (dropdown: Female Dresses, Male Shirts, Male T-Shirts, Kids Apparel), description, price, available sizes (multi-select or comma-separated input), stock quantity, and image filename; (2) an 'Edit' action per product that pre-fills the form with existing data; (3) a 'Delete' action per product with a confirmation prompt. All mutations must call the corresponding backend functions via React Query mutations and invalidate the products query on success. Apply the existing Dhimayu Studio warm neutral theme consistently to this page.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/App.tsx",
+          "frontend/src/pages/Admin.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/App.tsx",
+          "frontend/src/pages/Admin.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ]
+      },
+      {
+        "id": "REQ-24",
+        "summary": "Add an 'Admin' link in the Header navigation (desktop and mobile menu) that navigates to /admin. It should be styled consistently with the existing category navigation links in Header.tsx.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/Header.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/Header.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/Admin.tsx",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

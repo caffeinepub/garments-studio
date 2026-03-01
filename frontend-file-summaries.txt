@@ -1,0 +1,19 @@
+{
+  "frontend/src/index.css": "Global stylesheet with Cormorant Garamond and Jost fonts, reverted to the warm neutral palette — cream/off-white backgrounds (OKLCH ~0.97), charcoal foreground (OKLCH ~0.28), warm taupe secondary/muted tones, and terracotta/dusty rose accent (OKLCH ~0.62 hue 28) for both light and dark modes.",
+  "frontend/tailwind.config.js": "Extended Tailwind config with Cormorant Garamond/Jost fonts, OKLCH color tokens referencing the warm neutral palette CSS variables, and lightened shadow values appropriate for the cream/off-white light theme.",
+  "frontend/src/hooks/useQueries.ts": "Central React Query hooks file with all backend operations including three new admin mutations — useAddProduct, useUpdateProduct, and useDeleteProduct — each invalidating the 'products' query on success.",
+  "frontend/src/lib/utils.ts": "Utility helpers including cn(), formatPrice(), and lookup maps for category labels, images, slugs, and the ordered list of all categories.",
+  "frontend/src/components/Header.tsx": "Sticky header with category nav links and a new \"Admin\" link on both desktop and mobile menus, using the same font/colour/hover style as existing nav items.",
+  "frontend/src/components/Footer.tsx": "Three-column footer with logo (mixBlendMode removed for light background compatibility), section headings using terracotta accent color, and caffeine.ai attribution retained.",
+  "frontend/src/components/Layout.tsx": "Shell layout component rendering Header, an Outlet for page content, and Footer, used as the root route component.",
+  "frontend/src/components/ProductCard.tsx": "Product card with gold quick-add button, gold accent on product name hover and price display, and gold decorative symbol.",
+  "frontend/src/pages/Home.tsx": "Homepage with hero banner, brand statement, category cards, and features strip; the hero h1 \"Dhimayu Studio\" heading now uses `text-gray-400` for a gray colour.",
+  "frontend/src/pages/Catalog.tsx": "Catalog page with gold accent on active category tab and section labels, updated empty state with gold decorative symbol.",
+  "frontend/src/pages/ProductDetail.tsx": "Product detail page with gold accent on price, category label, size selector active state, stock badge, and primary add-to-bag CTA button.",
+  "frontend/src/pages/Cart.tsx": "Cart page with gold accent on line totals, subtotal display, checkout button, and empty state CTA; quantity controls updated with gold hover states.",
+  "frontend/src/pages/Checkout.tsx": "Checkout page with gold accent on total price, place order button, loading spinner, and form focus states; order summary panel with border for definition on dark background.",
+  "frontend/src/pages/OrderConfirmation.tsx": "Order confirmation page with gold success icon ring, gold order reference display, gold accent CTA button, and outlined return home link.",
+  "frontend/src/App.tsx": "Main app entry with TanStack Router setup; all seven routes registered under the Layout root route, including the new /admin route rendering the Admin page.",
+  "frontend/index.html": "HTML entry point with page title updated to \"DHIMAYU STUDIO\" in all caps.",
+  "frontend/src/pages/Admin.tsx": "Admin Panel page at /admin for managing products; displays all products in a responsive table with Add, Edit (pre-filled dialog), and Delete (confirmation dialog) actions, with loading skeletons, form validation, and inline mutation loading states."
+}
