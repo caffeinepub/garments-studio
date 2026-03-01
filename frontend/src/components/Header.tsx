@@ -35,23 +35,19 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* Centered Logo + Brand Name */}
+          {/* Centered Logo */}
           <Link
             to="/"
-            className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10"
+            className="absolute left-1/2 -translate-x-1/2 flex items-center z-10"
           >
             <img
-              src="/assets/generated/dhimayu-logo.dim_400x400.png"
+              src="/assets/generated/dhimayu-logo-black.dim_400x400.png"
               alt="DHIMAYU STUDIO"
-              className="h-10 md:h-13 w-auto object-contain"
-              style={{ mixBlendMode: 'darken' }}
+              className="h-12 md:h-14 w-auto object-contain"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
               }}
             />
-            <span className="font-serif text-base md:text-xl tracking-studio uppercase text-white drop-shadow-sm whitespace-nowrap">
-              DHIMAYU STUDIO
-            </span>
           </Link>
 
           {/* Right actions */}

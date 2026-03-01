@@ -10,7 +10,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           <div>
             <img
-              src="/assets/generated/dhimayu-logo.dim_400x400.png"
+              src="/assets/generated/dhimayu-logo-black.dim_400x400.png"
               alt="DHIMAYU STUDIO"
               className="h-16 w-auto object-contain mb-4"
               onError={(e) => {

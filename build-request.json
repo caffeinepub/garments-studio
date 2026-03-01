@@ -1,85 +1,44 @@
 {
   "kind": "build_request",
-  "title": "Build Admin Panel for Product Management",
+  "title": "Replace logo with uploaded 'logo black.png' image",
   "projectName": "Dhimayu Studio",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-22",
-      "text": "Add backend CRUD operations to support the admin panel: ensure addProduct, updateProduct, and deleteProduct functions exist in the main actor and are callable from the frontend. Each product must support: id, name, category, description, price, availableSizes (array of strings), stockQuantity, and imageFilename.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-7"
-        ],
-        "quotes": [
-          "build an admin panel"
-        ]
-      },
-      "acceptanceCriteria": [
-        "addProduct accepts all required product fields and persists a new product, returning the created product or its ID",
-        "updateProduct accepts a product ID and updated fields and persists the changes",
-        "deleteProduct accepts a product ID and removes it from the store",
-        "All three functions are exposed as public shared methods on the main actor"
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "text": "Build an Admin Panel page at the route /admin in the frontend. The page must display a full list of all existing products in a table or card list showing product name, category, price, stock, and sizes. The page must include: (1) an 'Add Product' form/modal with fields for name, category (dropdown: Female Dresses, Male Shirts, Male T-Shirts, Kids Apparel), description, price, available sizes (multi-select or comma-separated input), stock quantity, and image filename; (2) an 'Edit' action per product that pre-fills the form with existing data; (3) a 'Delete' action per product with a confirmation prompt. All mutations must call the corresponding backend functions via React Query mutations and invalidate the products query on success. Apply the existing Dhimayu Studio warm neutral theme consistently to this page.",
+      "id": "REQ-25",
+      "text": "Save the uploaded logo image as 'dhimayu-logo-black.dim_400x400.png' in frontend/public/assets/generated/. Then update Header.tsx and Footer.tsx to replace the currently used logo image (dhimayu-logo.dim_400x400.png) with this new file. The image must be rendered without any background box, card, container, or bg-* Tailwind class behind it — it must blend seamlessly with the header and footer backgrounds. Display it at an appropriate size so the yin-yang shape, both dots, and the 'Dhi'/'MayU' text are all clearly legible.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-7"
+          "msg-1"
         ],
         "quotes": [
-          "build an admin panel",
-          "a UI page where you can manually add, edit, and delete products through a form"
+          "use this image as the logo"
         ]
       },
       "acceptanceCriteria": [
-        "A route /admin renders the Admin Panel page and is accessible via direct URL navigation",
-        "The page lists all products fetched from the backend with name, category, price, stock, and sizes visible",
-        "Clicking 'Add Product' opens a form/modal with all required fields; submitting calls addProduct on the backend",
-        "Clicking 'Edit' on a product pre-fills the form with that product's data; submitting calls updateProduct on the backend",
-        "Clicking 'Delete' on a product shows a confirmation prompt; confirming calls deleteProduct on the backend",
-        "After any successful mutation, the product list refreshes to reflect the change",
-        "Form validates that required fields (name, category, price, stock) are not empty before submission",
-        "The page uses the existing warm neutral colour palette and typography (Cormorant Garamond / Jost) consistent with the rest of the app"
-      ]
-    },
-    {
-      "id": "REQ-24",
-      "text": "Add an 'Admin' link in the Header navigation (desktop and mobile menu) that navigates to /admin. It should be styled consistently with the existing category navigation links in Header.tsx.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-7"
-        ],
-        "quotes": [
-          "build an admin panel"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A navigation link labelled 'Admin' appears in the desktop header nav and the mobile collapsible menu",
-        "Clicking the link navigates to /admin",
-        "The link uses the same font, colour, and hover style as the existing category navigation links"
+        "The uploaded logo image is saved as dhimayu-logo-black.dim_400x400.png in frontend/public/assets/generated/",
+        "Header.tsx references dhimayu-logo-black.dim_400x400.png instead of the previous logo file",
+        "Footer.tsx references dhimayu-logo-black.dim_400x400.png instead of the previous logo file",
+        "No background color, bg-* class, or container box is applied behind the logo image in either Header or Footer",
+        "The logo renders with full transparency, blending seamlessly with the header and footer background surfaces",
+        "The yin-yang shape, both dots, and 'Dhi'/'MayU' text are clearly visible at the displayed size"
       ]
     }
   ],
   "constraints": [
-    "Do not modify any file under frontend/src/hooks/ (immutable paths)",
-    "Do not modify frontend/src/components/ui/ (immutable paths)",
-    "All Motoko logic must remain in backend/main.mo (single-actor architecture)",
-    "The admin panel must not break or alter any existing routes (home, catalog, product detail, cart, checkout, order confirmation)"
+    "Do not alter the logo image content — display it as-is without cropping, recoloring, or modifying the graphic",
+    "Do not add any white, cream, or colored background box or card behind the logo element"
   ],
   "nonGoals": [
-    "Authentication or access control for the admin panel (no login gate required at this stage)",
-    "Order management in the admin panel",
-    "Image upload functionality — image filename is entered as a plain text field",
-    "Analytics or dashboard metrics"
+    "Changing any other aspect of the header or footer layout",
+    "Modifying the colour scheme or typography",
+    "Updating any page other than Header.tsx and Footer.tsx"
   ],
   "imageRequirements": {
     "required": [],
-    "edits": []
+    "edits": [
+      "Remove white background to make it fully transparent, preserving the black yin-yang graphic, both dots, and 'Dhi'/'MayU' text exactly as-is (logo black.png > dhimayu-logo-black.dim_400x400.png)"
+    ]
   }
 }
