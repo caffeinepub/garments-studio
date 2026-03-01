@@ -37,26 +37,51 @@ export interface Product {
   'image' : string,
   'price' : number,
 }
+export interface StaticStoreContent {
+  'aboutPageCopy' : string,
+  'heroText' : string,
+  'heroBanner' : string,
+}
+export interface UserProfile { 'name' : string }
+export type UserRole = { 'admin' : null } |
+  { 'user' : null } |
+  { 'guest' : null };
 export interface _SERVICE {
+  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addAdminPrincipal' : ActorMethod<[Principal], undefined>,
   'addProduct' : ActorMethod<
     [string, Category, string, number, Array<string>, bigint, string],
     bigint
   >,
-  'addToCart' : ActorMethod<[string, bigint, string, bigint], undefined>,
-  'clearCart' : ActorMethod<[string], undefined>,
+  'addToCart' : ActorMethod<[bigint, string, bigint], undefined>,
+  'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'clearCart' : ActorMethod<[], undefined>,
   'deleteProduct' : ActorMethod<[bigint], undefined>,
-  'getCart' : ActorMethod<[string], Array<CartItem>>,
-  'getOrders' : ActorMethod<[string], Array<Order>>,
+  'getAllOrders' : ActorMethod<[], Array<Order>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
+  'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getCart' : ActorMethod<[], Array<CartItem>>,
+  'getOrders' : ActorMethod<[], Array<Order>>,
   'getProductById' : ActorMethod<[bigint], [] | [Product]>,
   'getProducts' : ActorMethod<[], Array<Product>>,
   'getProductsByCategory' : ActorMethod<[Category], Array<Product>>,
+  'getStoreContent' : ActorMethod<[], StaticStoreContent>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'initializeStore' : ActorMethod<[], undefined>,
-  'placeOrder' : ActorMethod<[string, Array<CartItem>, number], bigint>,
-  'removeFromCart' : ActorMethod<[string, bigint, string], undefined>,
+  'isCallerAdmin' : ActorMethod<[], boolean>,
+  /**
+   * / Checks if principal is in hardcoded admin list only
+   */
+  'isShouldBeAdmin' : ActorMethod<[], boolean>,
+  'placeOrder' : ActorMethod<[Array<CartItem>, number], bigint>,
+  'removeAdminPrincipal' : ActorMethod<[Principal], undefined>,
+  'removeFromCart' : ActorMethod<[bigint, string], undefined>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'updateProduct' : ActorMethod<
     [bigint, string, Category, string, number, Array<string>, bigint, string],
     undefined
   >,
+  'updateStoreContent' : ActorMethod<[string, string, string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

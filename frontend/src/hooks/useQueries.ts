@@ -1,22 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { Category, type Product, type CartItem, type Order } from '../backend';
-
-// ─── User ID ────────────────────────────────────────────────────────────────
-const getUserId = (): string => {
-  let id = localStorage.getItem('studio_user_id');
-  if (!id) {
-    id = `user_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-    localStorage.setItem('studio_user_id', id);
-  }
-  return id;
-};
-
-export const USER_ID = getUserId();
+import { useInternetIdentity } from './useInternetIdentity';
+import { Category, type Product, type CartItem, type Order, type StaticStoreContent, type UserProfile } from '../backend';
 
 // ─── Store Initialization ────────────────────────────────────────────────────
 export function useInitializeStore() {
-  const { actor, isFetching } = useActor();
+  const { actor } = useActor();
   return useMutation({
     mutationFn: async () => {
       if (!actor) throw new Error('Actor not ready');
@@ -143,10 +132,10 @@ export function useDeleteProduct() {
 export function useCart() {
   const { actor, isFetching } = useActor();
   return useQuery<CartItem[]>({
-    queryKey: ['cart', USER_ID],
+    queryKey: ['cart'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getCart(USER_ID);
+      return actor.getCart();
     },
     enabled: !!actor && !isFetching,
   });
@@ -166,10 +155,10 @@ export function useAddToCart() {
       quantity: bigint;
     }) => {
       if (!actor) throw new Error('Actor not ready');
-      await actor.addToCart(USER_ID, productId, size, quantity);
+      await actor.addToCart(productId, size, quantity);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart', USER_ID] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
   });
 }
@@ -180,10 +169,10 @@ export function useRemoveFromCart() {
   return useMutation({
     mutationFn: async ({ productId, size }: { productId: bigint; size: string }) => {
       if (!actor) throw new Error('Actor not ready');
-      await actor.removeFromCart(USER_ID, productId, size);
+      await actor.removeFromCart(productId, size);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart', USER_ID] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
   });
 }
@@ -194,10 +183,10 @@ export function useClearCart() {
   return useMutation({
     mutationFn: async () => {
       if (!actor) throw new Error('Actor not ready');
-      await actor.clearCart(USER_ID);
+      await actor.clearCart();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart', USER_ID] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
   });
 }
@@ -215,12 +204,12 @@ export function usePlaceOrder() {
       totalAmount: number;
     }) => {
       if (!actor) throw new Error('Actor not ready');
-      const orderId = await actor.placeOrder(USER_ID, cartItems, totalAmount);
+      const orderId = await actor.placeOrder(cartItems, totalAmount);
       return orderId;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart', USER_ID] });
-      queryClient.invalidateQueries({ queryKey: ['orders', USER_ID] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }
@@ -228,11 +217,102 @@ export function usePlaceOrder() {
 export function useOrders() {
   const { actor, isFetching } = useActor();
   return useQuery<Order[]>({
-    queryKey: ['orders', USER_ID],
+    queryKey: ['orders'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getOrders(USER_ID);
+      return actor.getOrders();
     },
     enabled: !!actor && !isFetching,
   });
+}
+
+// ─── Store Content ───────────────────────────────────────────────────────────
+export function useGetStoreContent() {
+  const { actor, isFetching } = useActor();
+  return useQuery<StaticStoreContent>({
+    queryKey: ['storeContent'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not ready');
+      return actor.getStoreContent();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useUpdateStoreContent() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      heroText,
+      heroBanner,
+      aboutPageCopy,
+    }: {
+      heroText: string;
+      heroBanner: string;
+      aboutPageCopy: string;
+    }) => {
+      if (!actor) throw new Error('Actor not ready');
+      await actor.updateStoreContent(heroText, heroBanner, aboutPageCopy);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['storeContent'] });
+    },
+  });
+}
+
+// ─── User Profile ─────────────────────────────────────────────────────────────
+export function useGetCallerUserProfile() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  const query = useQuery<UserProfile | null>({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getCallerUserProfile();
+    },
+    enabled: !!actor && !actorFetching,
+    retry: false,
+  });
+
+  return {
+    ...query,
+    isLoading: actorFetching || query.isLoading,
+    isFetched: !!actor && query.isFetched,
+  };
+}
+
+// ─── Admin Role Check ─────────────────────────────────────────────────────────
+export function useIsCallerAdmin() {
+  const { actor } = useActor();
+  const { identity } = useInternetIdentity();
+
+  // Only check admin status when the user is authenticated with a non-anonymous identity
+  const isAuthenticated = !!identity && !identity.getPrincipal().isAnonymous();
+  const principalStr = identity?.getPrincipal().toString() ?? 'anonymous';
+
+  const query = useQuery<boolean>({
+    // Include principal in query key so the query re-runs when identity changes
+    queryKey: ['isCallerAdmin', principalStr],
+    queryFn: async () => {
+      if (!actor) return false;
+      try {
+        return await actor.isCallerAdmin();
+      } catch {
+        return false;
+      }
+    },
+    // Only gate on actor availability and authentication — do NOT gate on actorFetching
+    // because useActor's useEffect fires refetchQueries after the actor is ready,
+    // and gating on isFetching causes the refetch to be ignored (disabled queries skip refetch).
+    enabled: !!actor && isAuthenticated,
+    retry: false,
+    staleTime: 0, // Always re-fetch when invalidated so login triggers a fresh check
+  });
+
+  return {
+    ...query,
+    data: isAuthenticated ? query.data : false,
+    isLoading: !isAuthenticated ? false : query.isLoading || query.isFetching,
+  };
 }

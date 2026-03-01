@@ -7,6 +7,21 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
+export interface Product {
+    id: bigint;
+    name: string;
+    description: string;
+    sizes: Array<string>;
+    stock: bigint;
+    category: Category;
+    image: string;
+    price: number;
+}
+export interface StaticStoreContent {
+    aboutPageCopy: string;
+    heroText: string;
+    heroBanner: string;
+}
 export interface CartItem {
     size: string;
     productId: bigint;
@@ -20,15 +35,8 @@ export interface Order {
     timestamp: bigint;
     items: Array<CartItem>;
 }
-export interface Product {
-    id: bigint;
+export interface UserProfile {
     name: string;
-    description: string;
-    sizes: Array<string>;
-    stock: bigint;
-    category: Category;
-    image: string;
-    price: number;
 }
 export enum Category {
     maleTshirts = "maleTshirts",
@@ -36,18 +44,38 @@ export enum Category {
     maleShirts = "maleShirts",
     kidsApparel = "kidsApparel"
 }
+export enum UserRole {
+    admin = "admin",
+    user = "user",
+    guest = "guest"
+}
 export interface backendInterface {
+    addAdminPrincipal(principal: Principal): Promise<void>;
     addProduct(name: string, category: Category, description: string, price: number, sizes: Array<string>, stock: bigint, image: string): Promise<bigint>;
-    addToCart(userId: string, productId: bigint, size: string, quantity: bigint): Promise<void>;
-    clearCart(userId: string): Promise<void>;
+    addToCart(productId: bigint, size: string, quantity: bigint): Promise<void>;
+    assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    clearCart(): Promise<void>;
     deleteProduct(id: bigint): Promise<void>;
-    getCart(userId: string): Promise<Array<CartItem>>;
-    getOrders(userId: string): Promise<Array<Order>>;
+    getAllOrders(): Promise<Array<Order>>;
+    getCallerUserProfile(): Promise<UserProfile | null>;
+    getCallerUserRole(): Promise<UserRole>;
+    getCart(): Promise<Array<CartItem>>;
+    getOrders(): Promise<Array<Order>>;
     getProductById(id: bigint): Promise<Product | null>;
     getProducts(): Promise<Array<Product>>;
     getProductsByCategory(c: Category): Promise<Array<Product>>;
+    getStoreContent(): Promise<StaticStoreContent>;
+    getUserProfile(user: Principal): Promise<UserProfile | null>;
     initializeStore(): Promise<void>;
-    placeOrder(userId: string, cartItems: Array<CartItem>, totalAmount: number): Promise<bigint>;
-    removeFromCart(userId: string, productId: bigint, size: string): Promise<void>;
+    isCallerAdmin(): Promise<boolean>;
+    /**
+     * / Checks if principal is in hardcoded admin list only
+     */
+    isShouldBeAdmin(): Promise<boolean>;
+    placeOrder(cartItems: Array<CartItem>, totalAmount: number): Promise<bigint>;
+    removeAdminPrincipal(principal: Principal): Promise<void>;
+    removeFromCart(productId: bigint, size: string): Promise<void>;
+    saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateProduct(id: bigint, name: string, category: Category, description: string, price: number, sizes: Array<string>, stock: bigint, image: string): Promise<void>;
+    updateStoreContent(heroText: string, heroBanner: string, aboutPageCopy: string): Promise<void>;
 }

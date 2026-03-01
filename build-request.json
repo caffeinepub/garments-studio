@@ -1,41 +1,43 @@
 {
   "kind": "build_request",
-  "title": "Fix Male Shirts category cover image",
+  "title": "Fix admin menu item visibility in UserDropdown",
+  "projectName": "Dhimayu Studio",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Save the uploaded photo (IMG-20260119-WA0021.jpg — man in blue printed shirt) as a static asset at `frontend/public/assets/generated/male-shirts-cover.jpg` and update the Male Shirts category image mapping in `frontend/src/lib/utils.ts` to reference this file path, replacing whatever value is currently causing the logo to appear instead of the product photo.",
-      "target": "frontend",
+      "text": "Fix the Admin panel link in UserDropdown so it reliably appears for authenticated admin users. Audit the full chain: (1) the backend admin check endpoint/method, (2) the useIsCallerAdmin() hook to ensure it calls the backend using the authenticated identity (not anonymous), (3) the React Query cache key and stale/refetch behavior so the result updates after login, and (4) the conditional rendering logic in UserDropdown that gates the Admin link on the hook's return value. All four layers must be consistent and correct.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1",
+          "msg-3"
         ],
         "quotes": [
-          "Product image is not showing, my logo is showing in the product category cover.",
-          "I want to change the male shirt category cover into this image"
+          "Still Not showing",
+          "Admin option not showing in dropdown menu (persists after multiple fix attempts)"
         ]
       },
       "acceptanceCriteria": [
-        "The Male Shirts category card on the homepage displays the uploaded photo of the man in the blue printed shirt, not the dhimayu logo.",
-        "No other category covers are affected.",
-        "The image renders correctly at the category card dimensions without distortion."
+        "After logging in with an admin Internet Identity, the 'Admin' menu item is visible in the UserDropdown without requiring a page refresh.",
+        "Non-admin authenticated users do not see the Admin menu item.",
+        "Unauthenticated users do not see the Admin menu item.",
+        "Navigating to /admin via the dropdown link works correctly for admin users.",
+        "The useIsCallerAdmin() hook uses the authenticated actor (not the anonymous actor) when querying the backend."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any other category cover image mappings.",
-    "Do not alter backend data or product records."
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts directly — work around them using safe composition patterns.",
+    "Do not change the existing role-based access control logic in backend/main.mo beyond what is needed to expose a reliable isCallerAdmin query."
   ],
   "nonGoals": [
-    "Changing any other category covers.",
-    "Modifying product detail page images.",
-    "Any backend schema or data changes."
+    "Adding new admin features or dashboard functionality.",
+    "Changing the visual design of the UserDropdown.",
+    "Modifying authentication flow or Internet Identity integration."
   ],
   "imageRequirements": {
     "required": [],
-    "edits": [
-      "Crop and resize to square category card format, preserving the upper-body shot of the model (IMG-20260119-WA0021.jpg > male-shirts-cover.dim_800x1000.jpg)"
-    ]
+    "edits": []
   }
 }

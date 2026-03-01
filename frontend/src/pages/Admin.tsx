@@ -1,12 +1,29 @@
 import { useState, useRef } from 'react';
-import { Pencil, Trash2, Plus, Loader2, AlertCircle, Package, Upload, X, ImageIcon } from 'lucide-react';
+import {
+  Pencil,
+  Trash2,
+  Plus,
+  Loader2,
+  AlertCircle,
+  Package,
+  Upload,
+  X,
+  ImageIcon,
+  Lock,
+  FileText,
+  CheckCircle2,
+} from 'lucide-react';
 import { Category, type Product } from '../backend';
 import {
   useProducts,
   useAddProduct,
   useUpdateProduct,
   useDeleteProduct,
+  useGetStoreContent,
+  useUpdateStoreContent,
+  useIsCallerAdmin,
 } from '../hooks/useQueries';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { CATEGORY_LABELS, ALL_CATEGORIES, formatPrice } from '../lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +64,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 
 // Max dimensions for resized image (keeps file size small enough for ICP)
 const MAX_IMAGE_WIDTH = 600;
@@ -67,7 +85,6 @@ function compressImage(file: File): Promise<string> {
 
       let { width, height } = img;
 
-      // Scale down proportionally if needed
       if (width > MAX_IMAGE_WIDTH || height > MAX_IMAGE_HEIGHT) {
         const widthRatio = MAX_IMAGE_WIDTH / width;
         const heightRatio = MAX_IMAGE_HEIGHT / height;
@@ -141,7 +158,171 @@ function validateForm(form: ProductFormData): string | null {
   return null;
 }
 
+// ─── Access Denied Screen ─────────────────────────────────────────────────────
+function AccessDenied({ reason }: { reason: 'unauthenticated' | 'not-admin' }) {
+  return (
+    <main className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="text-center max-w-sm">
+        <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
+          <Lock className="w-7 h-7 text-muted-foreground" />
+        </div>
+        <h1 className="font-serif text-2xl text-foreground mb-3">Access Restricted</h1>
+        <p className="font-sans text-sm text-muted-foreground leading-relaxed">
+          {reason === 'unauthenticated'
+            ? 'You must be logged in to access the admin panel. Please log in using the menu.'
+            : 'Your account does not have admin privileges to access this page.'}
+        </p>
+      </div>
+    </main>
+  );
+}
+
+// ─── Content Management Section ───────────────────────────────────────────────
+function ContentManagement() {
+  const { data: storeContent, isLoading: contentLoading } = useGetStoreContent();
+  const updateContent = useUpdateStoreContent();
+
+  const [heroText, setHeroText] = useState('');
+  const [heroBanner, setHeroBanner] = useState('');
+  const [aboutPageCopy, setAboutPageCopy] = useState('');
+  const [initialized, setInitialized] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Populate form once data loads
+  if (storeContent && !initialized) {
+    setHeroText(storeContent.heroText);
+    setHeroBanner(storeContent.heroBanner);
+    setAboutPageCopy(storeContent.aboutPageCopy);
+    setInitialized(true);
+  }
+
+  const handleSave = async () => {
+    setSaveError(null);
+    setSaveSuccess(false);
+    try {
+      await updateContent.mutateAsync({ heroText, heroBanner, aboutPageCopy });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save content.');
+    }
+  };
+
+  return (
+    <section className="mt-12">
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-1">
+          <FileText className="w-5 h-5 text-accent" />
+          <h2 className="font-serif text-2xl md:text-3xl text-foreground tracking-wide">
+            Content Management
+          </h2>
+        </div>
+        <p className="font-sans text-sm text-muted-foreground">
+          Edit the homepage hero text and About page copy.
+        </p>
+      </div>
+
+      {contentLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full rounded" />
+          <Skeleton className="h-10 w-full rounded" />
+          <Skeleton className="h-32 w-full rounded" />
+        </div>
+      ) : (
+        <div className="border border-border rounded p-6 bg-background space-y-5">
+          {/* Hero Text */}
+          <div className="space-y-1.5">
+            <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+              Homepage Hero Text
+            </Label>
+            <Input
+              value={heroText}
+              onChange={(e) => setHeroText(e.target.value)}
+              placeholder="e.g. Crafted for the moments that matter"
+              className="font-sans text-sm"
+            />
+            <p className="font-sans text-xs text-muted-foreground">
+              Displayed as the main headline on the homepage.
+            </p>
+          </div>
+
+          {/* Hero Banner */}
+          <div className="space-y-1.5">
+            <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+              Hero Banner Subtext
+            </Label>
+            <Input
+              value={heroBanner}
+              onChange={(e) => setHeroBanner(e.target.value)}
+              placeholder="e.g. New Collection 2026"
+              className="font-sans text-sm"
+            />
+            <p className="font-sans text-xs text-muted-foreground">
+              Displayed as a subtitle or banner label on the homepage.
+            </p>
+          </div>
+
+          {/* About Page Copy */}
+          <div className="space-y-1.5">
+            <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+              About Page Copy
+            </Label>
+            <Textarea
+              value={aboutPageCopy}
+              onChange={(e) => setAboutPageCopy(e.target.value)}
+              placeholder="Tell your brand story here..."
+              className="font-sans text-sm resize-none"
+              rows={6}
+            />
+            <p className="font-sans text-xs text-muted-foreground">
+              Displayed on the About Us page. Use line breaks to separate paragraphs.
+            </p>
+          </div>
+
+          {/* Feedback */}
+          {saveError && (
+            <div className="flex items-center gap-2 p-3 rounded border border-destructive/30 bg-destructive/10 text-destructive">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <p className="font-sans text-sm">{saveError}</p>
+            </div>
+          )}
+          {saveSuccess && (
+            <div className="flex items-center gap-2 p-3 rounded border border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <p className="font-sans text-sm">Content saved successfully!</p>
+            </div>
+          )}
+
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSave}
+              disabled={updateContent.isPending}
+              className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-studio uppercase gap-2"
+            >
+              {updateContent.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving…
+                </>
+              ) : (
+                'Save Content'
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ─── Main Admin Component ─────────────────────────────────────────────────────
 export function Admin() {
+  const { identity, isInitializing } = useInternetIdentity();
+  const isAuthenticated = !!identity && !identity.getPrincipal().isAnonymous();
+
+  const { data: isAdmin, isLoading: adminCheckLoading } = useIsCallerAdmin();
+
   const { data: products, isLoading, isError } = useProducts();
   const addProduct = useAddProduct();
   const updateProduct = useUpdateProduct();
@@ -158,6 +339,24 @@ export function Admin() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 
+  // Show loading while identity is initializing or admin check is in progress
+  if (isInitializing || (isAuthenticated && adminCheckLoading)) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </main>
+    );
+  }
+
+  // Auth guard
+  if (!isAuthenticated) {
+    return <AccessDenied reason="unauthenticated" />;
+  }
+
+  if (isAdmin === false) {
+    return <AccessDenied reason="not-admin" />;
+  }
+
   const openAddDialog = () => {
     setEditingProduct(null);
     setForm(EMPTY_FORM);
@@ -170,7 +369,6 @@ export function Admin() {
     setEditingProduct(product);
     setForm(productToForm(product));
     setFormError(null);
-    // Show existing image as preview if it's a base64 data URI
     if (product.image && product.image.startsWith('data:')) {
       setImagePreview(product.image);
     } else {
@@ -193,7 +391,6 @@ export function Admin() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setFormError('Please select a valid image file (JPG, PNG, or WebP).');
       return;
@@ -273,49 +470,29 @@ export function Admin() {
     <main className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="font-serif text-3xl md:text-4xl text-foreground tracking-wide">
-              Product Management
-            </h1>
-            <p className="font-sans text-sm text-muted-foreground mt-1">
-              Add, edit, or remove products from the store.
-            </p>
-          </div>
-          <Button
-            onClick={openAddDialog}
-            className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-studio uppercase gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Product
-          </Button>
+        <div className="mb-10">
+          <p className="font-sans text-xs tracking-studio uppercase text-accent mb-2">
+            Admin Dashboard
+          </p>
+          <h1 className="font-serif text-3xl md:text-4xl text-foreground tracking-wide">
+            Store Management
+          </h1>
+          <p className="font-sans text-sm text-muted-foreground mt-1">
+            Manage your products and store content from one place.
+          </p>
         </div>
 
-        {/* Error State */}
-        {isError && (
-          <div className="flex items-center gap-3 p-4 rounded border border-destructive/30 bg-destructive/10 text-destructive mb-6">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <p className="font-sans text-sm">Failed to load products. Please refresh the page.</p>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full rounded" />
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!isLoading && !isError && products?.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <Package className="w-12 h-12 text-muted-foreground/40 mb-4" />
-            <p className="font-serif text-xl text-muted-foreground mb-2">No products yet</p>
-            <p className="font-sans text-sm text-muted-foreground mb-6">
-              Get started by adding your first product.
-            </p>
+        {/* ── Products Section ── */}
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-serif text-2xl md:text-3xl text-foreground tracking-wide">
+                Product Management
+              </h2>
+              <p className="font-sans text-sm text-muted-foreground mt-0.5">
+                Add, edit, or remove products from the store.
+              </p>
+            </div>
             <Button
               onClick={openAddDialog}
               className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-studio uppercase gap-2"
@@ -324,120 +501,164 @@ export function Admin() {
               Add Product
             </Button>
           </div>
-        )}
 
-        {/* Products Table */}
-        {!isLoading && !isError && products && products.length > 0 && (
-          <div className="border border-border rounded overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-secondary/40">
-                  <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                    Name
-                  </TableHead>
-                  <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden sm:table-cell">
-                    Category
-                  </TableHead>
-                  <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                    Price
-                  </TableHead>
-                  <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden md:table-cell">
-                    Stock
-                  </TableHead>
-                  <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden lg:table-cell">
-                    Sizes
-                  </TableHead>
-                  <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground text-right">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id.toString()} className="hover:bg-secondary/20 transition-colors">
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        {/* Thumbnail in table */}
-                        {product.image && product.image.startsWith('data:') ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-9 h-9 rounded object-cover shrink-0 border border-border"
-                          />
-                        ) : (
-                          <div className="w-9 h-9 rounded bg-secondary flex items-center justify-center shrink-0 border border-border">
-                            <ImageIcon className="w-4 h-4 text-muted-foreground/40" />
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-sans text-sm font-medium text-foreground">{product.name}</p>
-                          <p className="font-sans text-xs text-muted-foreground sm:hidden">
-                            {CATEGORY_LABELS[product.category]}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      <Badge variant="outline" className="font-sans text-xs">
-                        {CATEGORY_LABELS[product.category]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-sans text-sm text-accent font-medium">
-                      {formatPrice(product.price)}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <span
-                        className={`font-sans text-sm ${
-                          Number(product.stock) === 0
-                            ? 'text-destructive'
-                            : Number(product.stock) < 5
-                            ? 'text-warning'
-                            : 'text-foreground'
-                        }`}
-                      >
-                        {product.stock.toString()}
-                      </span>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <div className="flex flex-wrap gap-1">
-                        {product.sizes.map((size) => (
-                          <span
-                            key={size}
-                            className="font-sans text-xs px-1.5 py-0.5 bg-secondary text-secondary-foreground rounded"
-                          >
-                            {size}
-                          </span>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(product)}
-                          className="h-8 w-8 text-muted-foreground hover:text-accent"
-                          aria-label={`Edit ${product.name}`}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openDeleteDialog(product)}
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          aria-label={`Delete ${product.name}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          {/* Error State */}
+          {isError && (
+            <div className="flex items-center gap-3 p-4 rounded border border-destructive/30 bg-destructive/10 text-destructive mb-6">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <p className="font-sans text-sm">Failed to load products. Please refresh the page.</p>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {isLoading && (
+            <div className="space-y-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 w-full rounded" />
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!isLoading && !isError && products?.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <Package className="w-12 h-12 text-muted-foreground/40 mb-4" />
+              <p className="font-serif text-xl text-muted-foreground mb-2">No products yet</p>
+              <p className="font-sans text-sm text-muted-foreground mb-6">
+                Get started by adding your first product.
+              </p>
+              <Button
+                onClick={openAddDialog}
+                className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-studio uppercase gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Product
+              </Button>
+            </div>
+          )}
+
+          {/* Products Table */}
+          {!isLoading && !isError && products && products.length > 0 && (
+            <div className="border border-border rounded overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-secondary/40">
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+                      Name
+                    </TableHead>
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden sm:table-cell">
+                      Category
+                    </TableHead>
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+                      Price
+                    </TableHead>
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden md:table-cell">
+                      Stock
+                    </TableHead>
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden lg:table-cell">
+                      Sizes
+                    </TableHead>
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground text-right">
+                      Actions
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+                </TableHeader>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow
+                      key={product.id.toString()}
+                      className="hover:bg-secondary/20 transition-colors"
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {product.image && product.image.startsWith('data:') ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-9 h-9 rounded object-cover shrink-0 border border-border"
+                            />
+                          ) : (
+                            <div className="w-9 h-9 rounded bg-secondary flex items-center justify-center shrink-0 border border-border">
+                              <ImageIcon className="w-4 h-4 text-muted-foreground/40" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-sans text-sm font-medium text-foreground">
+                              {product.name}
+                            </p>
+                            <p className="font-sans text-xs text-muted-foreground sm:hidden">
+                              {CATEGORY_LABELS[product.category]}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <Badge variant="outline" className="font-sans text-xs">
+                          {CATEGORY_LABELS[product.category]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-sans text-sm text-accent font-medium">
+                        {formatPrice(product.price)}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <span
+                          className={`font-sans text-sm ${
+                            Number(product.stock) === 0
+                              ? 'text-destructive'
+                              : Number(product.stock) < 5
+                              ? 'text-warning'
+                              : 'text-foreground'
+                          }`}
+                        >
+                          {product.stock.toString()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex flex-wrap gap-1">
+                          {product.sizes.map((size) => (
+                            <span
+                              key={size}
+                              className="font-sans text-xs px-1.5 py-0.5 bg-secondary text-secondary-foreground rounded"
+                            >
+                              {size}
+                            </span>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(product)}
+                            className="h-8 w-8 text-muted-foreground hover:text-accent"
+                            aria-label={`Edit ${product.name}`}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openDeleteDialog(product)}
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            aria-label={`Delete ${product.name}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
+
+        <Separator className="my-12" />
+
+        {/* ── Content Management Section ── */}
+        <ContentManagement />
       </div>
 
       {/* Add / Edit Dialog */}
@@ -502,28 +723,23 @@ export function Admin() {
             {/* Price (INR) */}
             <div className="space-y-1.5">
               <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Price (₹ INR) <span className="text-destructive">*</span>
+                Price (₹) <span className="text-destructive">*</span>
               </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-sans text-sm text-muted-foreground select-none">
-                  ₹
-                </span>
-                <Input
-                  value={form.price}
-                  onChange={(e) => handleFormChange('price', e.target.value)}
-                  placeholder="0.00"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className="font-sans text-sm pl-7"
-                />
-              </div>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.price}
+                onChange={(e) => handleFormChange('price', e.target.value)}
+                placeholder="e.g. 1299"
+                className="font-sans text-sm"
+              />
             </div>
 
             {/* Sizes */}
             <div className="space-y-1.5">
               <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Sizes <span className="text-muted-foreground/60 normal-case tracking-normal">(comma-separated)</span>
+                Sizes
               </Label>
               <Input
                 value={form.sizes}
@@ -531,6 +747,9 @@ export function Admin() {
                 placeholder="e.g. S, M, L, XL"
                 className="font-sans text-sm"
               />
+              <p className="font-sans text-xs text-muted-foreground">
+                Comma-separated list of available sizes.
+              </p>
             </div>
 
             {/* Stock */}
@@ -539,12 +758,12 @@ export function Admin() {
                 Stock <span className="text-destructive">*</span>
               </Label>
               <Input
-                value={form.stock}
-                onChange={(e) => handleFormChange('stock', e.target.value)}
-                placeholder="0"
                 type="number"
                 min="0"
                 step="1"
+                value={form.stock}
+                onChange={(e) => handleFormChange('stock', e.target.value)}
+                placeholder="e.g. 20"
                 className="font-sans text-sm"
               />
             </div>
@@ -555,71 +774,57 @@ export function Admin() {
                 Product Image
               </Label>
 
-              {/* Hidden file input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleImageFileChange}
-              />
-
               {imagePreview ? (
-                /* Preview with controls */
-                <div className="relative group rounded border border-border overflow-hidden bg-secondary">
+                <div className="relative w-full">
                   <img
                     src={imagePreview}
-                    alt="Product preview"
-                    className="w-full h-48 object-cover"
+                    alt="Preview"
+                    className="w-full max-h-48 object-contain rounded border border-border bg-secondary"
                   />
-                  <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/30 transition-all duration-200 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="bg-background text-foreground font-sans text-xs tracking-studio uppercase px-3 py-1.5 rounded hover:bg-secondary transition-colors"
-                    >
-                      Change
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleRemoveImage}
-                      className="bg-destructive text-destructive-foreground font-sans text-xs tracking-studio uppercase px-3 py-1.5 rounded hover:bg-destructive/90 transition-colors"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-background/80 border border-border text-muted-foreground hover:text-destructive transition-colors"
+                    aria-label="Remove image"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               ) : (
-                /* Upload area */
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploadingImage}
-                  className="w-full border border-dashed border-border rounded bg-secondary/30 hover:bg-secondary/60 transition-colors py-8 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full border border-dashed border-border rounded p-6 flex flex-col items-center gap-2 text-muted-foreground hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
                 >
                   {isUploadingImage ? (
-                    <>
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                      <span className="font-sans text-xs tracking-studio uppercase">Processing…</span>
-                    </>
+                    <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
-                    <>
-                      <Upload className="w-6 h-6" />
-                      <span className="font-sans text-xs tracking-studio uppercase">Upload Image</span>
-                      <span className="font-sans text-[10px] text-muted-foreground/60">
-                        JPG, PNG or WebP · auto-compressed
-                      </span>
-                    </>
+                    <Upload className="w-6 h-6" />
                   )}
+                  <span className="font-sans text-xs">
+                    {isUploadingImage ? 'Processing image…' : 'Click to upload image'}
+                  </span>
+                  <span className="font-sans text-[10px] text-muted-foreground/60">
+                    JPG, PNG or WebP — auto-compressed
+                  </span>
                 </button>
               )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageFileChange}
+              />
             </div>
 
             {/* Form Error */}
             {formError && (
-              <div className="flex items-start gap-2 p-3 rounded border border-destructive/30 bg-destructive/10 text-destructive">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <p className="font-sans text-xs">{formError}</p>
+              <div className="flex items-center gap-2 p-3 rounded border border-destructive/30 bg-destructive/10 text-destructive">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <p className="font-sans text-sm">{formError}</p>
               </div>
             )}
           </div>
@@ -639,8 +844,16 @@ export function Admin() {
               disabled={isMutating || isUploadingImage}
               className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-studio uppercase gap-2"
             >
-              {isMutating && <Loader2 className="w-3 h-3 animate-spin" />}
-              {editingProduct ? 'Save Changes' : 'Add Product'}
+              {isMutating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {editingProduct ? 'Saving…' : 'Adding…'}
+                </>
+              ) : editingProduct ? (
+                'Save Changes'
+              ) : (
+                'Add Product'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -668,8 +881,14 @@ export function Admin() {
               disabled={deleteProduct.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-sans text-xs tracking-studio uppercase gap-2"
             >
-              {deleteProduct.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
-              Delete
+              {deleteProduct.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                'Delete'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

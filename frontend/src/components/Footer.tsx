@@ -1,4 +1,5 @@
 import { Heart } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -45,7 +46,15 @@ export function Footer() {
           <div>
             <h4 className="font-sans text-xs tracking-studio uppercase text-accent mb-4">Studio</h4>
             <ul className="space-y-2">
-              {['About Us', 'Sustainability', 'Size Guide', 'Contact'].map((item) => (
+              <li>
+                <Link
+                  to="/about"
+                  className="font-sans text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  About Us
+                </Link>
+              </li>
+              {['Sustainability', 'Size Guide', 'Contact'].map((item) => (
                 <li key={item}>
                   <span className="font-sans text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
                     {item}

@@ -7,6 +7,7 @@ import { Cart } from './pages/Cart';
 import { Checkout } from './pages/Checkout';
 import { OrderConfirmation } from './pages/OrderConfirmation';
 import { Admin } from './pages/Admin';
+import { About } from './pages/About';
 
 // Root route with layout
 const rootRoute = createRootRoute({
@@ -56,6 +57,12 @@ const adminRoute = createRoute({
   component: Admin,
 });
 
+const aboutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/about',
+  component: About,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   catalogRoute,
@@ -64,6 +71,7 @@ const routeTree = rootRoute.addChildren([
   checkoutRoute,
   orderConfirmationRoute,
   adminRoute,
+  aboutRoute,
 ]);
 
 const router = createRouter({ routeTree });

@@ -3,11 +3,14 @@ import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 import Nat "mo:core/Nat";
+import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 
-
+import AccessControl "authorization/access-control";
+import MixinAuthorization "authorization/MixinAuthorization";
 
 actor {
+  // Types
   type Category = {
     #femaleDresses;
     #maleShirts;
@@ -41,14 +44,93 @@ actor {
     status : Text;
   };
 
+  type StaticStoreContent = {
+    heroText : Text;
+    heroBanner : Text;
+    aboutPageCopy : Text;
+  };
+
+  type UserProfile = {
+    name : Text;
+  };
+
+  // Authorization instance
+  let accessControlState = AccessControl.initState();
+  include MixinAuthorization(accessControlState);
+
+  // Admin allowlist for specific Internet Identity principals
+  let adminAllowlist = Map.empty<Principal, Bool>();
+
+  // State variables
   var nextProductId = 1;
   var nextOrderId = 1;
 
   let products = Map.empty<Nat, Product>();
-  let carts = Map.empty<Text, [CartItem]>();
-  let orders = Map.empty<Text, [Order]>();
+  let carts = Map.empty<Principal, [CartItem]>();
+  let orders = Map.empty<Principal, [Order]>();
+  let userProfiles = Map.empty<Principal, UserProfile>();
 
+  // Static store content management
+  var storeContent : StaticStoreContent = {
+    heroText = "Welcome to Our Store!";
+    heroBanner = "banner.jpg";
+    aboutPageCopy = "We are passionate about fashion and quality clothing.";
+  };
+
+  // On startup, assign admin role to all principals in the allowlist
+  for ((principal, _) in adminAllowlist.entries()) {
+    AccessControl.assignRole(accessControlState, principal, principal, #admin);
+  };
+
+  // Admin Allowlist Management
+  public shared ({ caller }) func addAdminPrincipal(principal : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can modify the allowlist");
+    };
+    adminAllowlist.add(principal, true);
+    AccessControl.assignRole(accessControlState, caller, principal, #admin);
+  };
+
+  public shared ({ caller }) func removeAdminPrincipal(principal : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can modify the allowlist");
+    };
+    adminAllowlist.remove(principal);
+    AccessControl.assignRole(accessControlState, caller, principal, #user);
+  };
+
+  /// Checks if principal is in hardcoded admin list only
+  public query ({ caller }) func isShouldBeAdmin() : async Bool {
+    adminAllowlist.containsKey(caller);
+  };
+
+  // User Profile Management
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can get profiles");
+    };
+    userProfiles.get(caller);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
+
+  // Store Initialization (admin only)
   public shared ({ caller }) func initializeStore() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can initialize the store");
+    };
     if (products.size() > 0) {
       Runtime.trap("Store already initialized");
     };
@@ -204,6 +286,7 @@ actor {
     assert (products.keys().toArray().size() == 12);
   };
 
+  // Product Management
   public shared ({ caller }) func addProduct(
     name : Text,
     category : Category,
@@ -213,6 +296,9 @@ actor {
     stock : Nat,
     image : Text,
   ) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can add products");
+    };
     let productId = nextProductId;
     let product : Product = {
       id = productId;
@@ -230,15 +316,15 @@ actor {
     productId;
   };
 
-  public query ({ caller }) func getProducts() : async [Product] {
+  public query func getProducts() : async [Product] {
     products.values().toArray();
   };
 
-  public query ({ caller }) func getProductsByCategory(c : Category) : async [Product] {
+  public query func getProductsByCategory(c : Category) : async [Product] {
     products.values().toArray().filter(func(p) { p.category == c });
   };
 
-  public query ({ caller }) func getProductById(id : Nat) : async ?Product {
+  public query func getProductById(id : Nat) : async ?Product {
     products.get(id);
   };
 
@@ -252,6 +338,9 @@ actor {
     stock : Nat,
     image : Text,
   ) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can update products");
+    };
     switch (products.get(id)) {
       case (null) { Runtime.trap("Product not found") };
       case (?_) {
@@ -271,6 +360,9 @@ actor {
   };
 
   public shared ({ caller }) func deleteProduct(id : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can delete products");
+    };
     switch (products.get(id)) {
       case (null) { Runtime.trap("Product not found") };
       case (?_) {
@@ -279,9 +371,13 @@ actor {
     };
   };
 
-  public shared ({ caller }) func addToCart(userId : Text, productId : Nat, size : Text, quantity : Nat) : async () {
+  // Cart Management — keyed by caller principal
+  public shared ({ caller }) func addToCart(productId : Nat, size : Text, quantity : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can manage their cart");
+    };
     let newItem : CartItem = { productId; size; quantity };
-    let currentCart = switch (carts.get(userId)) {
+    let currentCart = switch (carts.get(caller)) {
       case (null) { [] };
       case (?items) { items };
     };
@@ -290,58 +386,106 @@ actor {
       func(item) { item.productId != productId or item.size != size }
     ).concat([newItem]);
 
-    carts.add(userId, updatedCart);
+    carts.add(caller, updatedCart);
   };
 
-  public shared ({ caller }) func removeFromCart(userId : Text, productId : Nat, size : Text) : async () {
-    switch (carts.get(userId)) {
+  public shared ({ caller }) func removeFromCart(productId : Nat, size : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can manage their cart");
+    };
+    switch (carts.get(caller)) {
       case (null) { Runtime.trap("Cart not found") };
       case (?items) {
         let updatedCart = items.filter(
           func(item) { not (item.productId == productId and item.size == size) }
         );
-        carts.add(userId, updatedCart);
+        carts.add(caller, updatedCart);
       };
     };
   };
 
-  public query ({ caller }) func getCart(userId : Text) : async [CartItem] {
-    switch (carts.get(userId)) {
+  public query ({ caller }) func getCart() : async [CartItem] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view their cart");
+    };
+    switch (carts.get(caller)) {
       case (null) { [] };
       case (?items) { items };
     };
   };
 
-  public shared ({ caller }) func clearCart(userId : Text) : async () {
-    carts.remove(userId);
+  public shared ({ caller }) func clearCart() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can clear their cart");
+    };
+    carts.remove(caller);
   };
 
-  public shared ({ caller }) func placeOrder(userId : Text, cartItems : [CartItem], totalAmount : Float) : async Nat {
+  // Order Management — keyed by caller principal
+  public shared ({ caller }) func placeOrder(cartItems : [CartItem], totalAmount : Float) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can place orders");
+    };
     let orderId = nextOrderId;
     let order : Order = {
       id = orderId;
-      userId;
+      userId = caller.toText();
       items = cartItems;
       totalAmount;
       timestamp = Time.now();
       status = "pending";
     };
 
-    let userOrders = switch (orders.get(userId)) {
+    let userOrders = switch (orders.get(caller)) {
       case (null) { [] };
       case (?existingOrders) { existingOrders };
     };
 
     let updatedOrders = userOrders.concat([order]);
-    orders.add(userId, updatedOrders);
+    orders.add(caller, updatedOrders);
     nextOrderId += 1;
     orderId;
   };
 
-  public query ({ caller }) func getOrders(userId : Text) : async [Order] {
-    switch (orders.get(userId)) {
+  public query ({ caller }) func getOrders() : async [Order] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view their orders");
+    };
+    switch (orders.get(caller)) {
       case (null) { [] };
       case (?userOrders) { userOrders };
     };
+  };
+
+  // Admin: view all orders across all users
+  public query ({ caller }) func getAllOrders() : async [Order] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can view all orders");
+    };
+    var allOrders : [Order] = [];
+    for ((_, userOrders) in orders.entries()) {
+      allOrders := allOrders.concat(userOrders);
+    };
+    allOrders;
+  };
+
+  // Content Management
+  public shared ({ caller }) func updateStoreContent(
+    heroText : Text,
+    heroBanner : Text,
+    aboutPageCopy : Text,
+  ) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can update content");
+    };
+    storeContent := {
+      heroText;
+      heroBanner;
+      aboutPageCopy;
+    };
+  };
+
+  public query func getStoreContent() : async StaticStoreContent {
+    storeContent;
   };
 };

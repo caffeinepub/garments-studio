@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { ShoppingBag, Menu, X } from 'lucide-react';
 import { useCart } from '../hooks/useQueries';
 import { CATEGORY_LABELS, CATEGORY_TO_SLUG, ALL_CATEGORIES } from '../lib/utils';
+import { UserDropdown } from './UserDropdown';
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -28,10 +29,10 @@ export function Header() {
               </button>
             ))}
             <Link
-              to="/admin"
+              to="/about"
               className="font-sans text-xs tracking-studio uppercase text-muted-foreground hover:text-accent transition-colors duration-200"
             >
-              Admin
+              About Us
             </Link>
           </nav>
 
@@ -55,6 +56,11 @@ export function Header() {
 
           {/* Right actions */}
           <div className="flex items-center gap-4 z-10 ml-auto">
+            {/* User dropdown (login/account) — desktop only */}
+            <div className="hidden md:flex">
+              <UserDropdown />
+            </div>
+
             <Link to="/cart" className="relative p-2 text-foreground hover:text-accent transition-colors duration-200">
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (
@@ -93,12 +99,16 @@ export function Header() {
               </button>
             ))}
             <Link
-              to="/admin"
+              to="/about"
               onClick={() => setMobileOpen(false)}
-              className="text-left font-sans text-xs tracking-studio uppercase text-muted-foreground hover:text-accent py-3 transition-colors"
+              className="text-left font-sans text-xs tracking-studio uppercase text-muted-foreground hover:text-accent py-3 border-b border-border transition-colors"
             >
-              Admin
+              About Us
             </Link>
+            {/* User dropdown — mobile menu */}
+            <div className="py-3">
+              <UserDropdown />
+            </div>
           </nav>
         </div>
       )}

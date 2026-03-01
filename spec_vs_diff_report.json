@@ -1,24 +1,33 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T16:56:20.816Z",
-  "summary": "The diff updates `frontend/src/lib/utils.ts` to point the maleShirts category image to `/assets/generated/male-shirts-cover.dim_800x1000.jpg`, which satisfies the mapping update portion of REQ-1. However, the actual static image file (`frontend/public/assets/generated/male-shirts-cover.jpg` or the `.dim_800x1000.jpg` variant) does not appear in the diff as an added file. The 'ADDED FILES: none' section confirms no new binary/image asset was saved to the repository.",
+  "generatedAt": "2026-03-01T19:08:09.748Z",
+  "summary": "The diff addresses REQ-1 across all four audited layers: (1) backend adds/retains a query method for admin check, (2) useIsCallerAdmin hook updated with corrected enabled condition and staleTime, (3) React Query cache/stale behavior fixed, and (4) UserDropdown conditional rendering updated. The implementation appears largely complete, though one concern exists around whether the backend exposes a reliable isCallerAdmin query (the visible method is isShouldBeAdmin) and whether the hook truly uses the authenticated actor vs anonymous.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Save the uploaded photo (IMG-20260119-WA0021.jpg — man in blue printed shirt) as a static asset at `frontend/public/assets/generated/male-shirts-cover.jpg` (or the dimensioned variant `male-shirts-cover.dim_800x1000.jpg`).",
-      "reason": "The diff shows 'ADDED FILES: none', meaning no new image file was committed to `frontend/public/assets/generated/`. Only the mapping in `utils.ts` was updated, but without the actual image asset the category card will still not render correctly.",
+      "requirement": "The useIsCallerAdmin() hook uses the authenticated actor (not the anonymous actor) when querying the backend.",
+      "reason": "The diff summary for useQueries.ts mentions the hook only gates on !!actor && isAuthenticated but does not show explicit evidence that the actor used is the authenticated actor rather than the anonymous one. The constraint prohibits modifying useActor.ts directly, and there is no visible composition pattern shown that ensures the authenticated actor is selected. The truncated diff makes it impossible to confirm this layer is correctly addressed.",
       "evidence": [
-        "frontend/src/lib/utils.ts",
-        "frontend-file-summaries.txt"
+        "frontend/src/hooks/useQueries.ts"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.9,
+  "hallucinated_features": [
+    {
+      "description": "Backend method named isShouldBeAdmin (checks adminAllowlist directly) rather than a clean isCallerAdmin query method.",
+      "reason": "The build request specifies exposing a reliable isCallerAdmin query on the backend. The diff shows the method is named isShouldBeAdmin and only checks the adminAllowlist, not the full AccessControl role state. This naming and behavior diverges from what was specified.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    }
+  ],
+  "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/lib/utils.ts",
+    "frontend/src/components/UserDropdown.tsx",
+    "frontend/src/hooks/useQueries.ts",
     "project_state.json"
   ]
 }

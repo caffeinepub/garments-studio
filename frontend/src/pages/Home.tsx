@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { ArrowRight } from 'lucide-react';
-import { useProducts, useInitializeStore } from '../hooks/useQueries';
+import { useProducts, useInitializeStore, useGetStoreContent } from '../hooks/useQueries';
 import { CATEGORY_LABELS, CATEGORY_IMAGES, CATEGORY_TO_SLUG, ALL_CATEGORIES } from '../lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function Home() {
   const navigate = useNavigate();
   const { data: products } = useProducts();
   const initStore = useInitializeStore();
+  const { data: storeContent, isLoading: contentLoading } = useGetStoreContent();
 
   // Initialize store if empty
   useEffect(() => {
@@ -17,6 +19,9 @@ export function Home() {
   }, [products]);
 
   const categories = ALL_CATEGORIES;
+
+  const heroText = storeContent?.heroText || '"Crafted for the moments that matter"';
+  const heroBanner = storeContent?.heroBanner || '';
 
   return (
     <div className="animate-fade-in">
@@ -36,15 +41,33 @@ export function Home() {
           <p className="font-sans text-[10px] tracking-studio uppercase text-accent mb-4">
             Our Philosophy
           </p>
-          <h2 className="font-serif text-3xl md:text-4xl text-foreground leading-relaxed mb-6">
-            "Crafted for the moments that matter"
-          </h2>
+
+          {contentLoading ? (
+            <div className="space-y-3 mb-6">
+              <Skeleton className="h-10 w-3/4 mx-auto rounded" />
+              <Skeleton className="h-6 w-1/2 mx-auto rounded" />
+            </div>
+          ) : (
+            <>
+              <h2 className="font-serif text-3xl md:text-4xl text-foreground leading-relaxed mb-2">
+                {heroText}
+              </h2>
+              {heroBanner && heroBanner !== 'banner.jpg' && (
+                <p className="font-sans text-xs tracking-studio uppercase text-accent mb-4">
+                  {heroBanner}
+                </p>
+              )}
+            </>
+          )}
+
           <p className="font-sans text-sm text-muted-foreground leading-relaxed font-light">
             From flowing dresses to crisp shirts and playful kids' wear — every piece in our studio
             is selected for its quality, comfort, and enduring style.
           </p>
           <button
-            onClick={() => navigate({ to: '/catalog/$category', params: { category: 'female-dresses' } })}
+            onClick={() =>
+              navigate({ to: '/catalog/$category', params: { category: 'female-dresses' } })
+            }
             className="group mt-8 font-sans text-xs tracking-studio uppercase bg-accent text-accent-foreground px-8 py-3 hover:bg-foreground hover:text-background transition-all duration-300 inline-flex items-center gap-2"
           >
             Explore Collections
@@ -69,7 +92,12 @@ export function Home() {
             {categories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => navigate({ to: '/catalog/$category', params: { category: CATEGORY_TO_SLUG[cat] } })}
+                onClick={() =>
+                  navigate({
+                    to: '/catalog/$category',
+                    params: { category: CATEGORY_TO_SLUG[cat] },
+                  })
+                }
                 className="group relative overflow-hidden rounded-sm shadow-card hover:shadow-card-hover transition-all duration-300 text-left"
               >
                 <div className="relative aspect-[3/4] overflow-hidden bg-muted">

@@ -4,14 +4,13 @@
   "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "Male shirt category cover shows logo instead of the intended product image"
+    "Admin option not showing in dropdown menu (persists after multiple fix attempts)"
   ],
   "isFixRequest": true,
-  "imageRequirements": "## Edit Images\n- Crop and resize to square category card format, preserving the upper-body shot of the model (IMG-20260119-WA0021.jpg > male-shirts-cover.dim_800x1000.jpg)",
   "existing_features": [
     {
-      "id": "feature-save-the-uploaded-photo-img-20260119-wa0021-jpg-man-in-blue-printed-shirt-as-a-static-asset-at-frontend-public-assets-generated-male-shirts-cover-jpg-and-update-the-male-shirts-category-image-mapping-in-frontend-src-lib-utils-ts-to-reference-this-file-path-replacing-whatever-value-is-currently-causing-the-logo-to-appear-instead-of-the-product-photo",
-      "title": "Save the uploaded photo (IMG-20260119-WA0021.jpg — man in blue printed shirt) as a static asset at `frontend/public/assets/generated/male-shirts-cover.jpg` and update the Male Shirts category image mapping in `frontend/src/lib/utils.ts` to reference this file path, replacing whatever value is currently causing the logo to appear instead of the product photo.",
+      "id": "feature-fix-the-admin-panel-link-in-userdropdown-so-it-reliably-appears-for-authenticated-admin-users-audit-the-full-chain-1-the-backend-admin-check-endpoint-method-2-the-useiscalleradmin-hook-to-ensure-it-calls-the-backend-using-the-authenticated-identity-not-anonymous-3-the-react-query-cache-key-and-stale-refetch-behavior-so-the-result-updates-after-login-and-4-the-conditional-rendering-logic-in-userdropdown-that-gates-the-admin-link-on-the-hook-s-return-value-all-four-layers-must-be-consistent-and-correct",
+      "title": "Fix the Admin panel link in UserDropdown so it reliably appears for authenticated admin users. Audit the full chain: (1) the backend admin check endpoint/method, (2) the useIsCallerAdmin() hook to ensure it calls the backend using the authenticated identity (not anonymous), (3) the React Query cache key and stale/refetch behavior so the result updates after login, and (4) the conditional rendering logic in UserDropdown that gates the Admin link on the hook's return value. All four layers must be consistent and correct.",
       "reqIds": [
         "REQ-1"
       ],
@@ -19,7 +18,7 @@
     }
   ],
   "new_feature_requests": [],
-  "projectName": "Fix Male Shirts category cover image",
+  "projectName": "Dhimayu Studio",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T16:56:20.819Z",
+  "generatedAt": "2026-03-01T19:08:09.750Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,26 +12,31 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Save the uploaded photo (IMG-20260119-WA0021.jpg — man in blue printed shirt) as a static asset at `frontend/public/assets/generated/male-shirts-cover.jpg` and update the Male Shirts category image mapping in `frontend/src/lib/utils.ts` to reference this file path, replacing whatever value is currently causing the logo to appear instead of the product photo.",
+        "summary": "Fix the Admin panel link in UserDropdown so it reliably appears for authenticated admin users. Audit the full chain: (1) the backend admin check endpoint/method, (2) the useIsCallerAdmin() hook to ensure it calls the backend using the authenticated identity (not anonymous), (3) the React Query cache key and stale/refetch behavior so the result updates after login, and (4) the conditional rendering logic in UserDropdown that gates the Admin link on the hook's return value. All four layers must be consistent and correct.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/assets/generated/male-shirts-cover.dim_800x1000.jpg",
-          "frontend/src/lib/utils.ts"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/UserDropdown.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/assets/generated/male-shirts-cover.dim_800x1000.jpg",
-          "frontend/src/lib/utils.ts"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/UserDropdown.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/male-shirts-cover.dim_800x1000.jpg",
-    "frontend/src/lib/utils.ts",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/UserDropdown.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
