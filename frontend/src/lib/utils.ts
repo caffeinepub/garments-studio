@@ -22,7 +22,7 @@ export const CATEGORY_LABELS: Record<Category, string> = {
 
 export const CATEGORY_IMAGES: Record<Category, string> = {
   [Category.femaleDresses]: '/assets/generated/category-female-dresses.dim_600x700.png',
-  [Category.maleShirts]: '/assets/generated/category-male-shirts.dim_600x700.png',
+  [Category.maleShirts]: '/assets/generated/male-shirts-cover.dim_800x1000.jpg',
   [Category.maleTshirts]: '/assets/generated/category-male-tshirts.dim_600x700.png',
   [Category.kidsApparel]: '/assets/generated/category-kids-apparel.dim_600x700.png',
 };

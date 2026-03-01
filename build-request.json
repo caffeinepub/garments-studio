@@ -1,77 +1,41 @@
 {
   "kind": "build_request",
-  "title": "Fix image upload not saving to backend for products",
+  "title": "Fix Male Shirts category cover image",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the backend product type to include an `image` field (of type `Text`) so that image data can be persisted alongside product details. Update all related CRUD functions (add, edit, get) to handle this new field.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "uploading but not saving, error occuring"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The Product type in main.mo includes an `image : Text` field",
-        "The addProduct function accepts and stores the image field",
-        "The updateProduct function accepts and persists the image field",
-        "Existing products without images default to an empty string or placeholder without breaking"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Fix the Admin page product form so that the base64-encoded image string captured from the file upload input is correctly included in the payload sent to the backend addProduct and updateProduct mutations. Ensure no error occurs on save and that the saved image persists and reloads correctly in the edit dialog.",
+      "text": "Save the uploaded photo (IMG-20260119-WA0021.jpg — man in blue printed shirt) as a static asset at `frontend/public/assets/generated/male-shirts-cover.jpg` and update the Male Shirts category image mapping in `frontend/src/lib/utils.ts` to reference this file path, replacing whatever value is currently causing the logo to appear instead of the product photo.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "uploading but not saving, error occuring"
+          "Product image is not showing, my logo is showing in the product category cover.",
+          "I want to change the male shirt category cover into this image"
         ]
       },
       "acceptanceCriteria": [
-        "Uploading an image in the Add Product dialog and clicking Save stores the product including the image without error",
-        "Uploading an image in the Edit Product dialog and clicking Save updates the product including the new image without error",
-        "After saving, the product's image is visible in the product list and product detail page",
-        "Re-opening the edit dialog for a product with an image shows the previously uploaded image preview",
-        "No console errors or unhandled exceptions occur during the upload and save flow"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Update the product display components (ProductCard, ProductDetail, Catalog) to render the product's stored image when available, falling back gracefully to the existing placeholder when no image is present.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "uploading but not saving, error occuring"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A product with a saved image displays that image in the product card on catalog pages",
-        "A product with a saved image displays that image on the product detail page",
-        "Products without an image continue to display a placeholder without errors"
+        "The Male Shirts category card on the homepage displays the uploaded photo of the man in the blue printed shirt, not the dhimayu logo.",
+        "No other category covers are affected.",
+        "The image renders correctly at the category card dimensions without distortion."
       ]
     }
   ],
   "constraints": [
-    "Do not break existing product, cart, or order data — handle migration safely for products that lack an image field",
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui"
+    "Do not modify any other category cover image mappings.",
+    "Do not alter backend data or product records."
   ],
   "nonGoals": [
-    "External image hosting or CDN integration",
-    "Image compression or resizing on the backend",
-    "Bulk image upload or multi-image per product support"
+    "Changing any other category covers.",
+    "Modifying product detail page images.",
+    "Any backend schema or data changes."
   ],
   "imageRequirements": {
     "required": [],
-    "edits": []
+    "edits": [
+      "Crop and resize to square category card format, preserving the upper-body shot of the model (IMG-20260119-WA0021.jpg > male-shirts-cover.dim_800x1000.jpg)"
+    ]
   }
 }

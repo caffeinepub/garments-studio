@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-admin-page-product-form-so-that-the-base64-encoded-image-string-captured-from-the-file-upload-input-is-correctly-included-in-the-payload-sent-to-the-backend-addproduct-and-updateproduct-mutations-ensure-no-error-occurs-on-save-and-that-the-saved-image-persists-and-reloads-correctly-in-the-edit-dialog",
-      "featureTitle": "Fix the Admin page product form so that the base64-encoded image string captured from the file upload input is correctly included in the payload sent to the backend addProduct and updateProduct mutations. Ensure no error occurs on save and that the saved image persists and reloads correctly in the edit dialog.",
+      "featureId": "feature-save-the-uploaded-photo-img-20260119-wa0021-jpg-man-in-blue-printed-shirt-as-a-static-asset-at-frontend-public-assets-generated-male-shirts-cover-jpg-and-update-the-male-shirts-category-image-mapping-in-frontend-src-lib-utils-ts-to-reference-this-file-path-replacing-whatever-value-is-currently-causing-the-logo-to-appear-instead-of-the-product-photo",
+      "featureTitle": "Save the uploaded photo (IMG-20260119-WA0021.jpg — man in blue printed shirt) as a static asset at `frontend/public/assets/generated/male-shirts-cover.jpg` and update the Male Shirts category image mapping in `frontend/src/lib/utils.ts` to reference this file path, replacing whatever value is currently causing the logo to appear instead of the product photo.",
       "files": [
-        "frontend/src/pages/Admin.tsx"
+        "frontend/src/lib/utils.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -15,26 +15,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-product-display-components-productcard-productdetail-catalog-to-render-the-product-s-stored-image-when-available-falling-back-gracefully-to-the-existing-placeholder-when-no-image-is-present",
-      "featureTitle": "Update the product display components (ProductCard, ProductDetail, Catalog) to render the product's stored image when available, falling back gracefully to the existing placeholder when no image is present.",
-      "files": [
-        "frontend/src/components/ProductCard.tsx",
-        "frontend/src/pages/ProductDetail.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
+        "REQ-1"
       ],
       "confidence": "high"
     }

@@ -20,26 +20,14 @@ export function Home() {
 
   return (
     <div className="animate-fade-in">
-      {/* Hero Banner */}
-      <section className="relative w-full overflow-hidden bg-secondary">
-        <div className="relative h-[420px] md:h-[560px] lg:h-[600px] flex flex-col items-center justify-center text-center px-4">
-          <p className="font-sans text-xs tracking-studio uppercase text-accent mb-4">
-            New Collection 2026
-          </p>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-foreground leading-none mb-6">
-            Dhimayu Studio
-          </h1>
-          <p className="font-sans text-sm md:text-base text-muted-foreground max-w-md mb-8 font-light tracking-wide-studio">
-            Timeless garments for every chapter of life
-          </p>
-          <button
-            onClick={() => navigate({ to: '/catalog/$category', params: { category: 'female-dresses' } })}
-            className="group font-sans text-xs tracking-studio uppercase bg-accent text-accent-foreground px-8 py-3 hover:bg-foreground hover:text-background transition-all duration-300 flex items-center gap-2"
-          >
-            Explore Collections
-            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" />
-          </button>
-        </div>
+      {/* Cover Hero — 4-photo collage, no text */}
+      <section className="w-full overflow-hidden">
+        <img
+          src="/assets/generated/cover-hero.dim_1800x900.png"
+          alt="Dhimayu Studio collection cover"
+          className="w-full object-cover object-center block"
+          style={{ maxHeight: '90vh', minHeight: '260px' }}
+        />
       </section>
 
       {/* Brand Statement */}
@@ -55,6 +43,13 @@ export function Home() {
             From flowing dresses to crisp shirts and playful kids' wear — every piece in our studio
             is selected for its quality, comfort, and enduring style.
           </p>
+          <button
+            onClick={() => navigate({ to: '/catalog/$category', params: { category: 'female-dresses' } })}
+            className="group mt-8 font-sans text-xs tracking-studio uppercase bg-accent text-accent-foreground px-8 py-3 hover:bg-foreground hover:text-background transition-all duration-300 inline-flex items-center gap-2"
+          >
+            Explore Collections
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" />
+          </button>
         </div>
       </section>
 

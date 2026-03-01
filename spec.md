@@ -1,12 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Fix product image upload so that images are correctly saved to the backend and displayed across the app.
+**Goal:** Fix the Male Shirts category card so it displays the correct product photo instead of the logo.
 
 **Planned changes:**
-- Add an `image` field (Text) to the backend Product type and update addProduct, updateProduct, and getProduct functions to handle it, with safe defaults for existing products
-- Fix the Admin page product form to include the base64-encoded image string in the payload sent to addProduct and updateProduct backend calls
-- Ensure the edit dialog pre-populates the image preview when a product already has a saved image
-- Update ProductCard, ProductDetail, and Catalog components to display the stored product image when available, falling back to a placeholder when none is present
+- Save the uploaded photo of the man in the blue printed shirt as a static asset (`frontend/public/assets/generated/male-shirts-cover.jpg`)
+- Update the Male Shirts category image mapping in `frontend/src/lib/utils.ts` to reference the new photo path
 
-**User-visible outcome:** Admins can upload a product image, save it without errors, and see the image persist in the product list, product detail page, and edit dialog. Products without images continue to show a placeholder.
+**User-visible outcome:** The Male Shirts category card on the homepage displays the photo of the man in the blue printed shirt instead of the logo. All other category covers remain unchanged.

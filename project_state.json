@@ -4,38 +4,22 @@
   "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "Image upload option exists but uploaded images are not saving correctly with products — error occurring on save"
+    "Male shirt category cover shows logo instead of the intended product image"
   ],
   "isFixRequest": true,
+  "imageRequirements": "## Edit Images\n- Crop and resize to square category card format, preserving the upper-body shot of the model (IMG-20260119-WA0021.jpg > male-shirts-cover.dim_800x1000.jpg)",
   "existing_features": [
     {
-      "id": "feature-fix-the-admin-page-product-form-so-that-the-base64-encoded-image-string-captured-from-the-file-upload-input-is-correctly-included-in-the-payload-sent-to-the-backend-addproduct-and-updateproduct-mutations-ensure-no-error-occurs-on-save-and-that-the-saved-image-persists-and-reloads-correctly-in-the-edit-dialog",
-      "title": "Fix the Admin page product form so that the base64-encoded image string captured from the file upload input is correctly included in the payload sent to the backend addProduct and updateProduct mutations. Ensure no error occurs on save and that the saved image persists and reloads correctly in the edit dialog.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-product-display-components-productcard-productdetail-catalog-to-render-the-product-s-stored-image-when-available-falling-back-gracefully-to-the-existing-placeholder-when-no-image-is-present",
-      "title": "Update the product display components (ProductCard, ProductDetail, Catalog) to render the product's stored image when available, falling back gracefully to the existing placeholder when no image is present.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    }
-  ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Update the backend product type to include an `image` field (of type `Text`) so that image data can be persisted alongside product details. Update all related CRUD functions (add, edit, get) to handle this new field.",
+      "id": "feature-save-the-uploaded-photo-img-20260119-wa0021-jpg-man-in-blue-printed-shirt-as-a-static-asset-at-frontend-public-assets-generated-male-shirts-cover-jpg-and-update-the-male-shirts-category-image-mapping-in-frontend-src-lib-utils-ts-to-reference-this-file-path-replacing-whatever-value-is-currently-causing-the-logo-to-appear-instead-of-the-product-photo",
+      "title": "Save the uploaded photo (IMG-20260119-WA0021.jpg — man in blue printed shirt) as a static asset at `frontend/public/assets/generated/male-shirts-cover.jpg` and update the Male Shirts category image mapping in `frontend/src/lib/utils.ts` to reference this file path, replacing whatever value is currently causing the logo to appear instead of the product photo.",
       "reqIds": [
         "REQ-1"
       ],
-      "status": "pending"
+      "version": 1
     }
   ],
-  "projectName": "Fix image upload not saving to backend for products",
+  "new_feature_requests": [],
+  "projectName": "Fix Male Shirts category cover image",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
