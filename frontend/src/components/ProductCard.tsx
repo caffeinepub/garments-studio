@@ -9,9 +9,16 @@ interface ProductCardProps {
   product: Product;
 }
 
+function isDataUri(value: string): boolean {
+  return value.startsWith('data:image/');
+}
+
 export function ProductCard({ product }: ProductCardProps) {
   const addToCart = useAddToCart();
   const [adding, setAdding] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  const hasImage = product.image && isDataUri(product.image) && !imgError;
 
   const handleQuickAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,14 +45,23 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="relative overflow-hidden bg-secondary rounded-sm shadow-card hover:shadow-card-hover transition-all duration-300">
         {/* Image */}
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-          <div className="w-full h-full flex items-center justify-center bg-secondary">
-            <div className="text-center p-6">
-              <div className="font-serif text-4xl text-accent/40 mb-2">✦</div>
-              <p className="font-sans text-xs tracking-studio uppercase text-muted-foreground/50">
-                {product.name.charAt(0)}
-              </p>
+          {hasImage ? (
+            <img
+              src={product.image}
+              alt={product.name}
+              onError={() => setImgError(true)}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-secondary">
+              <div className="text-center p-6">
+                <div className="font-serif text-4xl text-accent/40 mb-2">✦</div>
+                <p className="font-sans text-xs tracking-studio uppercase text-muted-foreground/50">
+                  {product.name.charAt(0)}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
           {/* Overlay on hover */}
           <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-all duration-300" />
           {/* Quick add button */}

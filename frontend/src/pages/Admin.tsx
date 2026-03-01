@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Pencil, Trash2, Plus, Loader2, AlertCircle, Package } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Pencil, Trash2, Plus, Loader2, AlertCircle, Package, Upload, X, ImageIcon } from 'lucide-react';
 import { Category, type Product } from '../backend';
 import {
   useProducts,
@@ -47,6 +47,58 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Max dimensions for resized image (keeps file size small enough for ICP)
+const MAX_IMAGE_WIDTH = 600;
+const MAX_IMAGE_HEIGHT = 800;
+const IMAGE_QUALITY = 0.75;
+
+/**
+ * Resize and compress an image file using Canvas API.
+ * Returns a base64 data URI string.
+ */
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let { width, height } = img;
+
+      // Scale down proportionally if needed
+      if (width > MAX_IMAGE_WIDTH || height > MAX_IMAGE_HEIGHT) {
+        const widthRatio = MAX_IMAGE_WIDTH / width;
+        const heightRatio = MAX_IMAGE_HEIGHT / height;
+        const ratio = Math.min(widthRatio, heightRatio);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      const base64 = canvas.toDataURL('image/jpeg', IMAGE_QUALITY);
+      resolve(base64);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Failed to load image'));
+    };
+
+    img.src = objectUrl;
+  });
+}
 
 interface ProductFormData {
   name: string;
@@ -99,6 +151,9 @@ export function Admin() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
@@ -107,6 +162,7 @@ export function Admin() {
     setEditingProduct(null);
     setForm(EMPTY_FORM);
     setFormError(null);
+    setImagePreview(null);
     setDialogOpen(true);
   };
 
@@ -114,6 +170,12 @@ export function Admin() {
     setEditingProduct(product);
     setForm(productToForm(product));
     setFormError(null);
+    // Show existing image as preview if it's a base64 data URI
+    if (product.image && product.image.startsWith('data:')) {
+      setImagePreview(product.image);
+    } else {
+      setImagePreview(null);
+    }
     setDialogOpen(true);
   };
 
@@ -125,6 +187,38 @@ export function Admin() {
   const handleFormChange = (field: keyof ProductFormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setFormError(null);
+  };
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setFormError('Please select a valid image file (JPG, PNG, or WebP).');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setFormError(null);
+
+    try {
+      const compressed = await compressImage(file);
+      setImagePreview(compressed);
+      setForm((prev) => ({ ...prev, image: compressed }));
+    } catch {
+      setFormError('Failed to process image. Please try a different file.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview(null);
+    setForm((prev) => ({ ...prev, image: '' }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = async () => {
@@ -146,7 +240,7 @@ export function Admin() {
       price: Number(form.price),
       sizes: sizesArray,
       stock: BigInt(Math.floor(Number(form.stock))),
-      image: form.image.trim(),
+      image: form.image,
     };
 
     try {
@@ -156,8 +250,9 @@ export function Admin() {
         await addProduct.mutateAsync(payload);
       }
       setDialogOpen(false);
-    } catch {
-      setFormError('An error occurred. Please try again.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setFormError(message);
     }
   };
 
@@ -261,11 +356,25 @@ export function Admin() {
                 {products.map((product) => (
                   <TableRow key={product.id.toString()} className="hover:bg-secondary/20 transition-colors">
                     <TableCell>
-                      <div>
-                        <p className="font-sans text-sm font-medium text-foreground">{product.name}</p>
-                        <p className="font-sans text-xs text-muted-foreground sm:hidden">
-                          {CATEGORY_LABELS[product.category]}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        {/* Thumbnail in table */}
+                        {product.image && product.image.startsWith('data:') ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-9 h-9 rounded object-cover shrink-0 border border-border"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded bg-secondary flex items-center justify-center shrink-0 border border-border">
+                            <ImageIcon className="w-4 h-4 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-sans text-sm font-medium text-foreground">{product.name}</p>
+                          <p className="font-sans text-xs text-muted-foreground sm:hidden">
+                            {CATEGORY_LABELS[product.category]}
+                          </p>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
@@ -333,7 +442,7 @@ export function Admin() {
 
       {/* Add / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg bg-background border-border">
+        <DialogContent className="sm:max-w-lg bg-background border-border max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl text-foreground">
               {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -384,40 +493,29 @@ export function Admin() {
               <Textarea
                 value={form.description}
                 onChange={(e) => handleFormChange('description', e.target.value)}
-                placeholder="Brief product description…"
+                placeholder="Product description..."
                 className="font-sans text-sm resize-none"
                 rows={3}
               />
             </div>
 
-            {/* Price & Stock */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                  Price (USD) <span className="text-destructive">*</span>
-                </Label>
+            {/* Price (INR) */}
+            <div className="space-y-1.5">
+              <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+                Price (₹ INR) <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-sans text-sm text-muted-foreground select-none">
+                  ₹
+                </span>
                 <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
                   value={form.price}
                   onChange={(e) => handleFormChange('price', e.target.value)}
                   placeholder="0.00"
-                  className="font-sans text-sm"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                  Stock <span className="text-destructive">*</span>
-                </Label>
-                <Input
                   type="number"
                   min="0"
-                  step="1"
-                  value={form.stock}
-                  onChange={(e) => handleFormChange('stock', e.target.value)}
-                  placeholder="0"
-                  className="font-sans text-sm"
+                  step="0.01"
+                  className="font-sans text-sm pl-7"
                 />
               </div>
             </div>
@@ -425,42 +523,108 @@ export function Admin() {
             {/* Sizes */}
             <div className="space-y-1.5">
               <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Sizes
+                Sizes <span className="text-muted-foreground/60 normal-case tracking-normal">(comma-separated)</span>
               </Label>
               <Input
                 value={form.sizes}
                 onChange={(e) => handleFormChange('sizes', e.target.value)}
-                placeholder="e.g. XS, S, M, L, XL"
+                placeholder="e.g. S, M, L, XL"
                 className="font-sans text-sm"
               />
-              <p className="font-sans text-xs text-muted-foreground">
-                Comma-separated list of available sizes.
-              </p>
             </div>
 
-            {/* Image filename */}
+            {/* Stock */}
             <div className="space-y-1.5">
               <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Image Filename
+                Stock <span className="text-destructive">*</span>
               </Label>
               <Input
-                value={form.image}
-                onChange={(e) => handleFormChange('image', e.target.value)}
-                placeholder="e.g. floral_dress.jpg"
+                value={form.stock}
+                onChange={(e) => handleFormChange('stock', e.target.value)}
+                placeholder="0"
+                type="number"
+                min="0"
+                step="1"
                 className="font-sans text-sm"
               />
+            </div>
+
+            {/* Image Upload */}
+            <div className="space-y-1.5">
+              <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+                Product Image
+              </Label>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleImageFileChange}
+              />
+
+              {imagePreview ? (
+                /* Preview with controls */
+                <div className="relative group rounded border border-border overflow-hidden bg-secondary">
+                  <img
+                    src={imagePreview}
+                    alt="Product preview"
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/30 transition-all duration-200 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-background text-foreground font-sans text-xs tracking-studio uppercase px-3 py-1.5 rounded hover:bg-secondary transition-colors"
+                    >
+                      Change
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="bg-destructive text-destructive-foreground font-sans text-xs tracking-studio uppercase px-3 py-1.5 rounded hover:bg-destructive/90 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Upload area */
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingImage}
+                  className="w-full border border-dashed border-border rounded bg-secondary/30 hover:bg-secondary/60 transition-colors py-8 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <span className="font-sans text-xs tracking-studio uppercase">Processing…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-6 h-6" />
+                      <span className="font-sans text-xs tracking-studio uppercase">Upload Image</span>
+                      <span className="font-sans text-[10px] text-muted-foreground/60">
+                        JPG, PNG or WebP · auto-compressed
+                      </span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Form Error */}
             {formError && (
-              <div className="flex items-center gap-2 text-destructive text-sm font-sans">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                {formError}
+              <div className="flex items-start gap-2 p-3 rounded border border-destructive/30 bg-destructive/10 text-destructive">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <p className="font-sans text-xs">{formError}</p>
               </div>
             )}
           </div>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 pt-2">
             <DialogClose asChild>
               <Button
                 variant="outline"
@@ -472,10 +636,10 @@ export function Admin() {
             </DialogClose>
             <Button
               onClick={handleSubmit}
-              disabled={isMutating}
+              disabled={isMutating || isUploadingImage}
               className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-studio uppercase gap-2"
             >
-              {isMutating && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isMutating && <Loader2 className="w-3 h-3 animate-spin" />}
               {editingProduct ? 'Save Changes' : 'Add Product'}
             </Button>
           </DialogFooter>
@@ -491,15 +655,12 @@ export function Admin() {
             </AlertDialogTitle>
             <AlertDialogDescription className="font-sans text-sm text-muted-foreground">
               Are you sure you want to delete{' '}
-              <span className="font-medium text-foreground">"{deletingProduct?.name}"</span>? This
+              <span className="font-medium text-foreground">{deletingProduct?.name}</span>? This
               action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel
-              className="font-sans text-xs tracking-studio uppercase"
-              disabled={deleteProduct.isPending}
-            >
+          <AlertDialogFooter>
+            <AlertDialogCancel className="font-sans text-xs tracking-studio uppercase">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
@@ -507,7 +668,7 @@ export function Admin() {
               disabled={deleteProduct.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-sans text-xs tracking-studio uppercase gap-2"
             >
-              {deleteProduct.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              {deleteProduct.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

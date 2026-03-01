@@ -1,41 +1,74 @@
 {
   "kind": "build_request",
-  "title": "Display all prices in Indian Rupees (₹) across the frontend",
-  "projectName": "Dhimayu Studio",
-  "priority": "normal",
+  "title": "Fix image upload not saving to backend for products",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-26",
-      "text": "Update the price formatting utility in frontend/src/lib/utils.ts to format all prices using the Indian Rupee symbol (₹) and Indian number formatting (e.g. ₹1,499 or ₹1,499.00). Replace any existing currency formatter (e.g. USD/$ format) with one that uses 'en-IN' locale and 'INR' currency, or equivalent manual formatting. This single change must cascade to every component that calls the price formatter.",
+      "id": "REQ-1",
+      "text": "Update the backend product type to include an `image` field (of type `Text`) so that image data can be persisted alongside product details. Update all related CRUD functions (add, edit, get) to handle this new field.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "uploading but not saving, error occuring"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Product type in main.mo includes an `image : Text` field",
+        "The addProduct function accepts and stores the image field",
+        "The updateProduct function accepts and persists the image field",
+        "Existing products without images default to an empty string or placeholder without breaking"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Fix the Admin page product form so that the base64-encoded image string captured from the file upload input is correctly included in the payload sent to the backend addProduct and updateProduct mutations. Ensure no error occurs on save and that the saved image persists and reloads correctly in the edit dialog.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "change all price tag is in indian currency- rupees"
+          "uploading but not saving, error occuring"
         ]
       },
       "acceptanceCriteria": [
-        "The formatPrice (or equivalent) utility in utils.ts outputs prices with the ₹ symbol instead of $ or any other currency symbol.",
-        "Prices on the Product Catalog page (ProductCard.tsx) display in ₹ format.",
-        "Prices on the Product Detail page display in ₹ format.",
-        "Unit price and line totals on the Cart page display in ₹ format.",
-        "Order summary prices and the subtotal/total on the Checkout page display in ₹ format.",
-        "Product prices in the Admin Panel table/card list display in ₹ format.",
-        "No page in the app shows a $ or other non-INR currency symbol for any price."
+        "Uploading an image in the Add Product dialog and clicking Save stores the product including the image without error",
+        "Uploading an image in the Edit Product dialog and clicking Save updates the product including the new image without error",
+        "After saving, the product's image is visible in the product list and product detail page",
+        "Re-opening the edit dialog for a product with an image shows the previously uploaded image preview",
+        "No console errors or unhandled exceptions occur during the upload and save flow"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update the product display components (ProductCard, ProductDetail, Catalog) to render the product's stored image when available, falling back gracefully to the existing placeholder when no image is present.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "uploading but not saving, error occuring"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A product with a saved image displays that image in the product card on catalog pages",
+        "A product with a saved image displays that image on the product detail page",
+        "Products without an image continue to display a placeholder without errors"
       ]
     }
   ],
   "constraints": [
-    "Do not change any backend price storage — prices remain as plain numbers in the Motoko actor.",
-    "Only the display/formatting layer in the frontend must be changed.",
-    "Do not modify any file listed under frontend.immutablePaths."
+    "Do not break existing product, cart, or order data — handle migration safely for products that lack an image field",
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui"
   ],
   "nonGoals": [
-    "Currency conversion — prices are already stored as INR values; only the display format changes.",
-    "Adding a currency switcher or multi-currency support.",
-    "Changing the backend data model or any Motoko code."
+    "External image hosting or CDN integration",
+    "Image compression or resizing on the backend",
+    "Bulk image upload or multi-image per product support"
   ],
   "imageRequirements": {
     "required": [],

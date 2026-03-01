@@ -14,7 +14,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-16 md:h-20">
+        <div className="relative flex items-center justify-between h-20 md:h-24">
 
           {/* Desktop Nav — left side */}
           <nav className="hidden md:flex items-center gap-6 z-10">
@@ -35,19 +35,22 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* Centered Logo */}
+          {/* Centered Logo + Studio Name */}
           <Link
             to="/"
-            className="absolute left-1/2 -translate-x-1/2 flex items-center z-10"
+            className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center z-10"
           >
             <img
               src="/assets/generated/dhimayu-logo-black.dim_400x400.png"
               alt="DHIMAYU STUDIO"
-              className="h-12 md:h-14 w-auto object-contain"
+              className="h-10 md:h-12 w-auto object-contain"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
               }}
             />
+            <span className="font-serif text-[10px] md:text-xs tracking-[0.25em] uppercase text-foreground/70 mt-0.5 leading-none">
+              dhimayu studio
+            </span>
           </Link>
 
           {/* Right actions */}

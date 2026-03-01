@@ -22,31 +22,23 @@ export function Home() {
     <div className="animate-fade-in">
       {/* Hero Banner */}
       <section className="relative w-full overflow-hidden bg-secondary">
-        <div className="relative h-[420px] md:h-[560px] lg:h-[600px]">
-          <img
-            src="/assets/generated/hero-banner.dim_1400x600.png"
-            alt="Dhimayu Studio — Curated Fashion"
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-background/50" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-            <p className="font-sans text-xs tracking-studio uppercase text-accent mb-4">
-              New Collection 2026
-            </p>
-            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-gray-400 leading-none mb-6">
-              Dhimayu Studio
-            </h1>
-            <p className="font-sans text-sm md:text-base text-muted-foreground max-w-md mb-8 font-light tracking-wide-studio">
-              Timeless garments for every chapter of life
-            </p>
-            <button
-              onClick={() => navigate({ to: '/catalog/$category', params: { category: 'female-dresses' } })}
-              className="group font-sans text-xs tracking-studio uppercase bg-accent text-accent-foreground px-8 py-3 hover:bg-foreground hover:text-background transition-all duration-300 flex items-center gap-2"
-            >
-              Explore Collections
-              <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" />
-            </button>
-          </div>
+        <div className="relative h-[420px] md:h-[560px] lg:h-[600px] flex flex-col items-center justify-center text-center px-4">
+          <p className="font-sans text-xs tracking-studio uppercase text-accent mb-4">
+            New Collection 2026
+          </p>
+          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-foreground leading-none mb-6">
+            Dhimayu Studio
+          </h1>
+          <p className="font-sans text-sm md:text-base text-muted-foreground max-w-md mb-8 font-light tracking-wide-studio">
+            Timeless garments for every chapter of life
+          </p>
+          <button
+            onClick={() => navigate({ to: '/catalog/$category', params: { category: 'female-dresses' } })}
+            className="group font-sans text-xs tracking-studio uppercase bg-accent text-accent-foreground px-8 py-3 hover:bg-foreground hover:text-background transition-all duration-300 flex items-center gap-2"
+          >
+            Explore Collections
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" />
+          </button>
         </div>
       </section>
 

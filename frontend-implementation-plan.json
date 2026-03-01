@@ -1,25 +1,49 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Display all prices in Indian Rupees (₹) across the frontend",
+  "title": "Fix image upload not saving to backend for products",
   "requirements": [
     {
-      "id": "REQ-26",
-      "summary": "Update the price formatting utility to display all prices in Indian Rupees (₹) with Indian number formatting, ensuring the change cascades to every component that displays prices",
+      "id": "REQ-2",
+      "summary": "Fix the Admin page product form to correctly send base64-encoded image data to backend mutations and ensure images persist and reload in the edit dialog",
       "acceptanceCriteria": [
-        "The formatPrice (or equivalent) utility in utils.ts outputs prices with the ₹ symbol instead of $ or any other currency symbol.",
-        "Prices on the Product Catalog page (ProductCard.tsx) display in ₹ format.",
-        "Prices on the Product Detail page display in ₹ format.",
-        "Unit price and line totals on the Cart page display in ₹ format.",
-        "Order summary prices and the subtotal/total on the Checkout page display in ₹ format.",
-        "Product prices in the Admin Panel table/card list display in ₹ format.",
-        "No page in the app shows a $ or other non-INR currency symbol for any price."
+        "Uploading an image in the Add Product dialog and clicking Save stores the product including the image without error",
+        "Uploading an image in the Edit Product dialog and clicking Save updates the product including the new image without error",
+        "After saving, the product's image is visible in the product list and product detail page",
+        "Re-opening the edit dialog for a product with an image shows the previously uploaded image preview",
+        "No console errors or unhandled exceptions occur during the upload and save flow"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/utils.ts",
+          "path": "frontend/src/pages/Admin.tsx",
           "operation": "modify",
-          "description": "Replace the existing formatPrice function to use Indian Rupee (₹) formatting. Change the Intl.NumberFormat locale from 'en-US' and currency from 'USD' to 'en-IN' locale and 'INR' currency. This will automatically format all prices with the ₹ symbol and Indian number formatting conventions (e.g., ₹1,499.00). Since all components (ProductCard, ProductDetail, Cart, Checkout, Admin) already call this utility function, this single change will cascade the INR format across the entire application."
+          "description": "Update the product form dialog to correctly capture and include the base64-encoded image string in the formData state when a file is selected. Ensure the image field is passed to both useAddProduct and useUpdateProduct mutations. Fix the file input handler to properly convert the uploaded file to a base64 string and store it in formData.image. When editing a product, pre-populate the image preview from the existing product.image field. Verify that the form reset clears the image state properly."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Update product display components to render stored product images with graceful fallback to placeholder",
+      "acceptanceCriteria": [
+        "A product with a saved image displays that image in the product card on catalog pages",
+        "A product with a saved image displays that image on the product detail page",
+        "Products without an image continue to display a placeholder without errors"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Update the product image rendering to use product.image when available (checking for non-empty string). If product.image exists and is a valid base64 data URI, render it as the img src. Otherwise, fall back to the existing placeholder/icon. Ensure the img element handles both data URIs and empty/missing images gracefully without breaking layout or throwing errors."
+        },
+        {
+          "path": "frontend/src/pages/ProductDetail.tsx",
+          "operation": "modify",
+          "description": "Update the product detail image rendering to display product.image when available (checking for non-empty string). If product.image exists and is a valid base64 data URI, render it as the img src. Otherwise, fall back to the existing placeholder. Ensure proper error handling for invalid or missing images so the page remains functional."
+        },
+        {
+          "path": "frontend/src/pages/Catalog.tsx",
+          "operation": "modify",
+          "description": "Verify that ProductCard components within the catalog grid correctly receive and display product.image data. Ensure no additional changes are needed here beyond passing through the complete product object to ProductCard, as the image rendering logic is handled in ProductCard itself."
         }
       ]
     }

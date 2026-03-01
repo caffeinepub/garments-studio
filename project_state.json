@@ -1,178 +1,26 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 27,
-  "summary": "A garments selling app (studio) named 'Dhimayu Studio' featuring female dresses, male shirts and t-shirts, and kids apparel.",
-  "architectural_notes": [
-    "App targets three main categories: female dresses, male shirts/t-shirts, and kids apparel"
+  "projectStateVersion": 3,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Image upload option exists but uploaded images are not saving correctly with products — error occurring on save"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-build-a-homepage-landing-page-for-the-studio-it-must-feature-a-full-width-hero-banner-with-a-tagline-a-featured-collections-section-showing-all-four-categories-female-dresses-male-shirts-male-t-shirts-kids-apparel-as-visual-category-cards-and-a-short-brand-statement-use-the-generated-hero-banner-and-category-images-as-assets-from-frontend-public-assets-generated",
-      "title": "Build a homepage (landing page) for the studio. It must feature a full-width hero banner with a tagline, a featured collections section showing all four categories (Female Dresses, Male Shirts, Male T-Shirts, Kids Apparel) as visual category cards, and a short brand statement. Use the generated hero banner and category images as assets from frontend/public/assets/generated.",
+      "id": "feature-fix-the-admin-page-product-form-so-that-the-base64-encoded-image-string-captured-from-the-file-upload-input-is-correctly-included-in-the-payload-sent-to-the-backend-addproduct-and-updateproduct-mutations-ensure-no-error-occurs-on-save-and-that-the-saved-image-persists-and-reloads-correctly-in-the-edit-dialog",
+      "title": "Fix the Admin page product form so that the base64-encoded image string captured from the file upload input is correctly included in the payload sent to the backend addProduct and updateProduct mutations. Ensure no error occurs on save and that the saved image persists and reloads correctly in the edit dialog.",
       "reqIds": [
-        "REQ-4"
+        "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-build-a-product-catalog-page-that-lists-products-filtered-by-category-implement-category-navigation-tabs-sidebar-for-female-dresses-male-shirts-male-t-shirts-kids-apparel-each-product-card-must-show-the-product-image-name-price-and-an-add-to-cart-button-fetch-data-from-the-backend-using-react-query",
-      "title": "Build a product catalog page that lists products filtered by category. Implement category navigation tabs/sidebar for: Female Dresses, Male Shirts, Male T-Shirts, Kids Apparel. Each product card must show the product image, name, price, and an 'Add to Cart' button. Fetch data from the backend using React Query.",
+      "id": "feature-update-the-product-display-components-productcard-productdetail-catalog-to-render-the-product-s-stored-image-when-available-falling-back-gracefully-to-the-existing-placeholder-when-no-image-is-present",
+      "title": "Update the product display components (ProductCard, ProductDetail, Catalog) to render the product's stored image when available, falling back gracefully to the existing placeholder when no image is present.",
       "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-a-product-detail-page-accessible-by-product-id-it-must-show-product-images-name-category-description-available-sizes-as-selectable-buttons-price-stock-status-and-an-add-to-cart-button-that-requires-a-size-to-be-selected-navigated-to-from-product-catalog-cards",
-      "title": "Build a product detail page accessible by product ID. It must show: product images, name, category, description, available sizes as selectable buttons, price, stock status, and an 'Add to Cart' button that requires a size to be selected. Navigated to from product catalog cards.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-a-shopping-cart-page-display-all-cart-items-with-product-name-selected-size-quantity-with-increment-decrement-controls-unit-price-and-line-total-show-the-cart-subtotal-include-a-proceed-to-checkout-button-and-a-continue-shopping-link-cart-state-must-sync-with-the-backend",
-      "title": "Build a shopping cart page. Display all cart items with product name, selected size, quantity (with increment/decrement controls), unit price, and line total. Show the cart subtotal. Include a 'Proceed to Checkout' button and a 'Continue Shopping' link. Cart state must sync with the backend.",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-a-checkout-page-display-an-order-summary-items-sizes-quantities-prices-total-include-a-simple-form-for-customer-name-and-delivery-address-provide-a-place-order-button-that-calls-placeorder-on-the-backend-clears-the-cart-on-success-and-shows-a-confirmation-message",
-      "title": "Build a checkout page. Display an order summary (items, sizes, quantities, prices, total). Include a simple form for customer name and delivery address. Provide a 'Place Order' button that calls placeOrder on the backend, clears the cart on success, and shows a confirmation message.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-apply-a-fashion-studio-visual-theme-consistently-across-the-entire-app-use-an-elegant-editorial-aesthetic-a-neutral-warm-palette-cream-off-white-charcoal-deep-taupe-and-a-single-warm-accent-color-like-terracotta-or-dusty-rose-serif-or-mixed-serif-sans-serif-typography-generous-whitespace-clean-grid-based-product-layouts-and-subtle-hover-animations-on-cards-and-buttons-the-header-must-include-the-studio-logo-name-category-navigation-and-a-cart-icon-with-item-count-badge",
-      "title": "Apply a fashion-studio visual theme consistently across the entire app. Use an elegant, editorial aesthetic: a neutral warm palette (cream, off-white, charcoal, deep taupe, and a single warm accent color like terracotta or dusty rose), serif or mixed serif/sans-serif typography, generous whitespace, clean grid-based product layouts, and subtle hover animations on cards and buttons. The header must include the studio logo/name, category navigation, and a cart icon with item count badge.",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-all-occurrences-of-the-current-app-brand-name-garments-studio-or-similar-placeholder-across-the-entire-frontend-with-the-user-s-actual-business-name-this-includes-the-header-logo-name-footer-brand-section-browser-tab-title-in-index-html-and-any-other-place-the-brand-name-appears-in-the-ui-prompt-the-user-to-provide-their-business-name-and-use-it-consistently-everywhere",
-      "title": "Replace all occurrences of the current app/brand name ('Garments Studio' or similar placeholder) across the entire frontend with the user's actual business name. This includes the Header logo/name, Footer brand section, browser tab title in index.html, and any other place the brand name appears in the UI. Prompt the user to provide their business name, and use it consistently everywhere.",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-the-user-s-custom-logo-to-the-app-place-the-logo-image-in-frontend-public-assets-generated-and-display-it-in-the-header-alongside-or-replacing-the-text-based-brand-name-the-logo-should-also-appear-in-the-footer-if-the-user-has-not-yet-provided-a-logo-file-generate-a-professional-placeholder-logo-for-a-garments-fashion-studio-brand-that-can-be-replaced-later",
-      "title": "Add the user's custom logo to the app. Place the logo image in frontend/public/assets/generated/ and display it in the Header alongside (or replacing) the text-based brand name. The logo should also appear in the Footer. If the user has not yet provided a logo file, generate a professional placeholder logo for a garments/fashion studio brand that can be replaced later.",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-current-logo-image-in-the-header-and-footer-with-the-new-transparent-background-version-of-the-user-provided-logo-dhimayu-logo-dim-400x400-png-display-it-at-an-appropriate-size-so-that-the-yin-yang-symbol-both-dots-and-the-dhi-mayu-text-are-all-clearly-legible-do-not-add-any-background-box-card-or-container-behind-the-logo-it-must-blend-seamlessly-with-whatever-surface-it-sits-on-cream-off-white-header-background-and-footer-background-remove-or-replace-the-previous-placeholder-logo-asset",
-      "title": "Replace the current logo image in the Header and Footer with the new transparent-background version of the user-provided logo (dhimayu-logo.dim_400x400.png). Display it at an appropriate size so that the yin-yang symbol, both dots, and the 'Dhi'/'MayU' text are all clearly legible. Do not add any background box, card, or container behind the logo — it must blend seamlessly with whatever surface it sits on (cream/off-white header background and footer background). Remove or replace the previous placeholder logo asset.",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-rename-the-app-brand-consistently-to-dhimayu-studio-everywhere-it-appears-in-the-frontend-the-browser-tab-title-in-index-html-the-header-logo-name-text-fallback-the-footer-brand-section-and-any-other-hardcoded-brand-name-occurrences-such-as-studio-atelier-currently-found-in-index-html-header-tsx-and-footer-tsx",
-      "title": "Rename the app brand consistently to 'Dhimayu Studio' everywhere it appears in the frontend: the browser tab title in index.html, the Header logo/name text fallback, the Footer brand section, and any other hardcoded brand name occurrences such as 'Studio Atelier' currently found in index.html, Header.tsx, and Footer.tsx.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-every-visible-occurrence-of-the-brand-name-text-in-the-frontend-with-dhimayu-studio-all-uppercase-this-includes-the-text-fallback-label-next-to-the-logo-in-header-tsx-the-brand-name-copyright-line-in-footer-tsx-the-browser-tab-title-in-index-html-and-any-other-hardcoded-string-that-currently-reads-atelier-studio-studio-atelier-dhimayu-studio-mixed-case-or-any-similar-variant-the-displayed-text-must-consistently-read-dhimayu-studio-in-all-caps-throughout-the-ui",
-      "title": "Replace every visible occurrence of the brand name text in the frontend with 'DHIMAYU STUDIO' (all uppercase). This includes the text fallback/label next to the logo in Header.tsx, the brand name/copyright line in Footer.tsx, the browser tab title in index.html, and any other hardcoded string that currently reads 'Atelier Studio', 'Studio Atelier', 'Dhimayu Studio' (mixed case), or any similar variant. The displayed text must consistently read 'DHIMAYU STUDIO' in all caps throughout the UI.",
-      "reqIds": [
-        "REQ-15"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-homepage-hero-cover-banner-image-to-replace-the-overlaid-text-atelier-studio-or-any-variant-with-dhimayu-studio-the-regenerated-hero-image-must-retain-the-same-visual-style-composition-and-dimensions-as-the-current-hero-banner-with-only-the-brand-name-text-changed",
-      "title": "Update the homepage hero/cover banner image to replace the overlaid text 'Atelier Studio' (or any variant) with 'Dhimayu Studio'. The regenerated hero image must retain the same visual style, composition, and dimensions as the current hero banner, with only the brand name text changed.",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-current-warm-neutral-colour-palette-cream-off-white-charcoal-terracotta-across-the-entire-frontend-with-a-new-colour-scheme-that-better-reflects-the-dhimayu-studio-brand-identity-the-new-palette-should-draw-inspiration-from-the-dhimayu-logo-a-yin-yang-motif-with-the-name-dhi-mayu-and-evoke-balance-depth-and-a-premium-fashion-studio-feel-suggested-direction-deep-inky-navy-or-near-black-as-the-primary-background-soft-ivory-or-warm-white-for-text-and-cards-and-a-refined-gold-or-dusty-jade-as-the-accent-colour-update-all-colour-tokens-in-frontend-src-index-css-and-frontend-tailwind-config-js-and-ensure-the-new-palette-is-applied-consistently-across-all-components-header-footer-hero-section-category-cards-product-cards-catalog-page-product-detail-cart-checkout-and-order-confirmation-pages",
-      "title": "Replace the current warm neutral colour palette (cream, off-white, charcoal, terracotta) across the entire frontend with a new colour scheme that better reflects the Dhimayu Studio brand identity. The new palette should draw inspiration from the Dhimayu logo — a yin-yang motif with the name 'Dhi'/'MayU' — and evoke balance, depth, and a premium fashion-studio feel. Suggested direction: deep inky navy or near-black as the primary background, soft ivory or warm white for text and cards, and a refined gold or dusty jade as the accent colour. Update all colour tokens in frontend/src/index.css and frontend/tailwind.config.js, and ensure the new palette is applied consistently across all components: Header, Footer, hero section, category cards, product cards, catalog page, product detail, cart, checkout, and order confirmation pages.",
-      "reqIds": [
-        "REQ-17"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-revert-the-entire-frontend-colour-scheme-back-to-the-previous-warm-neutral-palette-cream-off-white-charcoal-deep-taupe-and-terracotta-dusty-rose-as-accent-undoing-the-deep-navy-ivory-gold-palette-introduced-in-req-17-update-all-colour-tokens-in-frontend-src-index-css-and-frontend-tailwind-config-js-and-ensure-the-warm-neutral-palette-is-applied-consistently-across-all-components-header-footer-hero-section-category-cards-product-cards-catalog-page-product-detail-cart-checkout-and-order-confirmation-pages",
-      "title": "Revert the entire frontend colour scheme back to the previous warm neutral palette — cream, off-white, charcoal, deep taupe, and terracotta/dusty rose as accent — undoing the deep navy/ivory/gold palette introduced in REQ-17. Update all colour tokens in frontend/src/index.css and frontend/tailwind.config.js, and ensure the warm neutral palette is applied consistently across all components: Header, Footer, hero section, category cards, product cards, catalog page, product detail, cart, checkout, and order confirmation pages.",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-in-header-tsx-update-the-logo-display-area-so-that-1-the-logo-image-dhimayu-logo-dim-400x400-png-is-rendered-without-any-wrapping-background-box-card-or-container-no-white-cream-square-behind-it-so-only-the-black-yin-yang-graphic-shows-and-blends-seamlessly-with-the-blurred-frosted-header-background-2-horizontally-centered-in-the-header-display-the-text-dhimayu-studio-in-white-e-g-text-white-using-the-existing-serif-display-font-at-a-size-appropriate-for-a-fashion-studio-header-the-logo-and-the-dhimayu-studio-text-should-be-visually-grouped-in-the-centre-of-the-header-remove-any-css-class-inline-style-or-wrapper-element-that-adds-a-background-color-or-border-behind-the-logo-image",
-      "title": "In Header.tsx, update the logo display area so that: (1) the logo image (dhimayu-logo.dim_400x400.png) is rendered without any wrapping background box, card, or container — no white/cream square behind it — so only the black yin-yang graphic shows and blends seamlessly with the blurred/frosted header background; (2) horizontally centered in the header, display the text 'DHIMAYU STUDIO' in white (e.g. text-white), using the existing serif/display font, at a size appropriate for a fashion-studio header. The logo and the 'DHIMAYU STUDIO' text should be visually grouped in the centre of the header. Remove any CSS class, inline style, or wrapper element that adds a background color or border behind the logo image.",
-      "reqIds": [
-        "REQ-19"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-in-the-homepage-hero-section-change-the-colour-of-the-h1-heading-element-located-at-xpath-html-1-body-1-div-1-div-1-main-1-div-1-section-1-div-1-div-2-h1-1-to-gray-apply-a-suitable-gray-tailwind-class-e-g-text-gray-400-or-text-gray-500-to-that-specific-heading-only-without-affecting-any-other-text-elements-on-the-page",
-      "title": "In the homepage hero section, change the colour of the h1 heading element (located at XPath /html[1]/body[1]/div[1]/div[1]/main[1]/div[1]/section[1]/div[1]/div[2]/h1[1]) to gray. Apply a suitable gray Tailwind class (e.g. text-gray-400 or text-gray-500) to that specific heading only, without affecting any other text elements on the page.",
-      "reqIds": [
-        "REQ-20"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-in-header-tsx-remove-any-background-color-background-box-or-container-element-from-the-logo-image-element-at-xpath-html-1-body-1-div-1-div-1-header-1-div-1-div-1-a-1-img-1-ensure-the-img-tag-and-all-its-ancestor-wrapper-elements-up-to-and-including-the-a-tag-have-no-background-color-background-bg-tailwind-classes-or-inline-styles-that-produce-a-white-or-colored-box-behind-the-logo-the-logo-image-dhimayu-logo-dim-400x400-png-must-render-with-full-transparency-blending-seamlessly-with-the-header-background",
-      "title": "In Header.tsx, remove any background color, background box, or container element from the logo image element at XPath /html[1]/body[1]/div[1]/div[1]/header[1]/div[1]/div[1]/a[1]/img[1]. Ensure the <img> tag and all its ancestor wrapper elements (up to and including the <a> tag) have no background-color, background, bg-* Tailwind classes, or inline styles that produce a white or colored box behind the logo. The logo image (dhimayu-logo.dim_400x400.png) must render with full transparency, blending seamlessly with the header background.",
-      "reqIds": [
-        "REQ-21"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-an-admin-panel-page-at-the-route-admin-in-the-frontend-the-page-must-display-a-full-list-of-all-existing-products-in-a-table-or-card-list-showing-product-name-category-price-stock-and-sizes-the-page-must-include-1-an-add-product-form-modal-with-fields-for-name-category-dropdown-female-dresses-male-shirts-male-t-shirts-kids-apparel-description-price-available-sizes-multi-select-or-comma-separated-input-stock-quantity-and-image-filename-2-an-edit-action-per-product-that-pre-fills-the-form-with-existing-data-3-a-delete-action-per-product-with-a-confirmation-prompt-all-mutations-must-call-the-corresponding-backend-functions-via-react-query-mutations-and-invalidate-the-products-query-on-success-apply-the-existing-dhimayu-studio-warm-neutral-theme-consistently-to-this-page",
-      "title": "Build an Admin Panel page at the route /admin in the frontend. The page must display a full list of all existing products in a table or card list showing product name, category, price, stock, and sizes. The page must include: (1) an 'Add Product' form/modal with fields for name, category (dropdown: Female Dresses, Male Shirts, Male T-Shirts, Kids Apparel), description, price, available sizes (multi-select or comma-separated input), stock quantity, and image filename; (2) an 'Edit' action per product that pre-fills the form with existing data; (3) a 'Delete' action per product with a confirmation prompt. All mutations must call the corresponding backend functions via React Query mutations and invalidate the products query on success. Apply the existing Dhimayu Studio warm neutral theme consistently to this page.",
-      "reqIds": [
-        "REQ-23"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-an-admin-link-in-the-header-navigation-desktop-and-mobile-menu-that-navigates-to-admin-it-should-be-styled-consistently-with-the-existing-category-navigation-links-in-header-tsx",
-      "title": "Add an 'Admin' link in the Header navigation (desktop and mobile menu) that navigates to /admin. It should be styled consistently with the existing category navigation links in Header.tsx.",
-      "reqIds": [
-        "REQ-24"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-save-the-uploaded-logo-image-as-dhimayu-logo-black-dim-400x400-png-in-frontend-public-assets-generated-then-update-header-tsx-and-footer-tsx-to-replace-the-currently-used-logo-image-dhimayu-logo-dim-400x400-png-with-this-new-file-the-image-must-be-rendered-without-any-background-box-card-container-or-bg-tailwind-class-behind-it-it-must-blend-seamlessly-with-the-header-and-footer-backgrounds-display-it-at-an-appropriate-size-so-the-yin-yang-shape-both-dots-and-the-dhi-mayu-text-are-all-clearly-legible",
-      "title": "Save the uploaded logo image as 'dhimayu-logo-black.dim_400x400.png' in frontend/public/assets/generated/. Then update Header.tsx and Footer.tsx to replace the currently used logo image (dhimayu-logo.dim_400x400.png) with this new file. The image must be rendered without any background box, card, container, or bg-* Tailwind class behind it — it must blend seamlessly with the header and footer backgrounds. Display it at an appropriate size so the yin-yang shape, both dots, and the 'Dhi'/'MayU' text are all clearly legible.",
-      "reqIds": [
-        "REQ-25"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-price-formatting-utility-in-frontend-src-lib-utils-ts-to-format-all-prices-using-the-indian-rupee-symbol-and-indian-number-formatting-e-g-1-499-or-1-499-00-replace-any-existing-currency-formatter-e-g-usd-format-with-one-that-uses-en-in-locale-and-inr-currency-or-equivalent-manual-formatting-this-single-change-must-cascade-to-every-component-that-calls-the-price-formatter",
-      "title": "Update the price formatting utility in frontend/src/lib/utils.ts to format all prices using the Indian Rupee symbol (₹) and Indian number formatting (e.g. ₹1,499 or ₹1,499.00). Replace any existing currency formatter (e.g. USD/$ format) with one that uses 'en-IN' locale and 'INR' currency, or equivalent manual formatting. This single change must cascade to every component that calls the price formatter.",
-      "reqIds": [
-        "REQ-26"
+        "REQ-3"
       ],
       "version": 1
     }
@@ -180,119 +28,14 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Product catalog with categories: female dresses, male shirts/t-shirts, kids apparel",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Product detail page with images, sizes, and pricing",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Shopping cart and checkout flow",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Studio-style UI with clean, fashion-forward design",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Create a backend data model and actor for products. Each product must have: id, name, category (female-dresses | male-shirts | male-tshirts | kids-apparel), description, price, available sizes (array of strings), stock quantity, and image filename. Provide CRUD operations: addProduct, getProducts, getProductsByCategory, getProductById, updateProduct, deleteProduct.",
+      "summary": "Update the backend product type to include an `image` field (of type `Text`) so that image data can be persisted alongside product details. Update all related CRUD functions (add, edit, get) to handle this new field.",
       "reqIds": [
         "REQ-1"
       ],
       "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Create a backend data model and actor for a shopping cart. Support: addToCart(userId, productId, size, quantity), removeFromCart(userId, productId, size), getCart(userId), clearCart(userId). Cart entries must store productId, selected size, and quantity.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Create a backend orders model. Support: placeOrder(userId, cartItems, totalAmount) which records the order with a timestamp and status ('pending'). Provide getOrders(userId) to retrieve order history.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-13",
-      "summary": "Seed the backend with sample products for each category (at least 3 per category) so the app is immediately browsable. Include realistic garment names, descriptions, sizes, and prices.",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Use user-provided image as the logo with background removed, merged well with the website body. Fonts and both dots must be perfectly visible. Logo must not be altered otherwise.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-16",
-      "summary": "Change 'Atelier Studio' (or similar) text to 'DHIMAYU STUDIO' (in caps) wherever it appears in the frontend",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-17",
-      "summary": "Change the 'Atelier Studio' text overlaid on the homepage hero/cover image to 'Dhimayu Studio'",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-19",
-      "summary": "Revert the colour scheme back to the previous version (warm neutral palette: cream, off-white, charcoal, terracotta) — the new colour scheme from AR-18/REQ-17 was not preferred",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-20",
-      "summary": "In the header, remove the square PNG background from the logo so only the black logo graphic shows, merge it seamlessly with the blurred header layer, and display 'DHIMAYU STUDIO' text in white centered in the middle of the header.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-21",
-      "summary": "Change the header 'DHIMAYU STUDIO' text colour (and/or logo area) to gray",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-22",
-      "summary": "Build an admin panel UI page where the owner can manually add, edit, and delete products through a form",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-23",
-      "summary": "Add backend CRUD operations to support the admin panel: ensure addProduct, updateProduct, and deleteProduct functions exist in the main actor and are callable from the frontend. Each product must support: id, name, category, description, price, availableSizes (array of strings), stockQuantity, and imageFilename.",
-      "reqIds": [
-        "REQ-22"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-24",
-      "summary": "Change all price tags across the frontend to display in Indian currency (Rupees, ₹ symbol) instead of the current currency format",
-      "reqIds": [],
-      "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "Dhimayu Studio",
+  "projectName": "Fix image upload not saving to backend for products",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

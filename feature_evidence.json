@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-price-formatting-utility-in-frontend-src-lib-utils-ts-to-format-all-prices-using-the-indian-rupee-symbol-and-indian-number-formatting-e-g-1-499-or-1-499-00-replace-any-existing-currency-formatter-e-g-usd-format-with-one-that-uses-en-in-locale-and-inr-currency-or-equivalent-manual-formatting-this-single-change-must-cascade-to-every-component-that-calls-the-price-formatter",
-      "featureTitle": "Update the price formatting utility in frontend/src/lib/utils.ts to format all prices using the Indian Rupee symbol (₹) and Indian number formatting (e.g. ₹1,499 or ₹1,499.00). Replace any existing currency formatter (e.g. USD/$ format) with one that uses 'en-IN' locale and 'INR' currency, or equivalent manual formatting. This single change must cascade to every component that calls the price formatter.",
+      "featureId": "feature-fix-the-admin-page-product-form-so-that-the-base64-encoded-image-string-captured-from-the-file-upload-input-is-correctly-included-in-the-payload-sent-to-the-backend-addproduct-and-updateproduct-mutations-ensure-no-error-occurs-on-save-and-that-the-saved-image-persists-and-reloads-correctly-in-the-edit-dialog",
+      "featureTitle": "Fix the Admin page product form so that the base64-encoded image string captured from the file upload input is correctly included in the payload sent to the backend addProduct and updateProduct mutations. Ensure no error occurs on save and that the saved image persists and reloads correctly in the edit dialog.",
       "files": [
-        "frontend/src/lib/utils.ts"
+        "frontend/src/pages/Admin.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -15,7 +15,26 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-26"
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-product-display-components-productcard-productdetail-catalog-to-render-the-product-s-stored-image-when-available-falling-back-gracefully-to-the-existing-placeholder-when-no-image-is-present",
+      "featureTitle": "Update the product display components (ProductCard, ProductDetail, Catalog) to render the product's stored image when available, falling back gracefully to the existing placeholder when no image is present.",
+      "files": [
+        "frontend/src/components/ProductCard.tsx",
+        "frontend/src/pages/ProductDetail.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

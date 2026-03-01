@@ -1,10 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Display all prices across the frontend using Indian Rupees (₹) instead of any other currency symbol.
+**Goal:** Fix product image upload so that images are correctly saved to the backend and displayed across the app.
 
 **Planned changes:**
-- Update the `formatPrice` (or equivalent) utility in `frontend/src/lib/utils.ts` to use the `₹` symbol with Indian number formatting (`en-IN` locale / `INR` currency)
-- This change cascades to all components that use the price formatter: ProductCard, Product Detail page, Cart page, Checkout page, and Admin Panel
+- Add an `image` field (Text) to the backend Product type and update addProduct, updateProduct, and getProduct functions to handle it, with safe defaults for existing products
+- Fix the Admin page product form to include the base64-encoded image string in the payload sent to addProduct and updateProduct backend calls
+- Ensure the edit dialog pre-populates the image preview when a product already has a saved image
+- Update ProductCard, ProductDetail, and Catalog components to display the stored product image when available, falling back to a placeholder when none is present
 
-**User-visible outcome:** Every price shown in the app (product listings, product detail, cart, checkout, admin panel) will display in Indian Rupees (e.g. ₹1,499) with no `$` or other currency symbols visible anywhere.
+**User-visible outcome:** Admins can upload a product image, save it without errors, and see the image persist in the product list, product detail page, and edit dialog. Products without images continue to show a placeholder.

@@ -1,14 +1,27 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T14:11:17.049Z",
-  "summary": "The diff modifies frontend/src/lib/utils.ts to update the formatPrice function to use 'en-IN' locale and 'INR' currency, which directly satisfies REQ-26's core requirement. The file-summaries confirm that Cart, Checkout, ProductDetail, ProductCard (Catalog), and Admin pages all use this shared utility, meaning the cascade effect is implied. No hallucinated features are detected.",
+  "generatedAt": "2026-03-01T16:02:35.676Z",
+  "summary": "The diff implements all three requirements: REQ-1 (backend image field + migration), REQ-2 (Admin form image handling with canvas compression), and REQ-3 (ProductCard and ProductDetail render stored images with fallback). All core ACs appear covered. One non-goal (image compression) is implemented on the frontend rather than backend, which is a minor deviation.",
   "missing_requirements": [],
-  "hallucinated_features": [],
-  "confidence": 0.88,
+  "hallucinated_features": [
+    {
+      "description": "Image compression and resizing on the frontend using Canvas API (max 600x800px, 75% JPEG quality) before upload",
+      "reason": "The build request lists 'Image compression or resizing on the backend' as a non-goal. While that specifically calls out backend compression, the diff goes beyond the stated requirement of simply passing the base64 string to the backend by implementing a compressImage utility with resize logic. This feature was not requested in any requirement.",
+      "evidence": [
+        "frontend/src/pages/Admin.tsx",
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "confidence": 0.85,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/lib/utils.ts",
+    "frontend/src/components/ProductCard.tsx",
+    "frontend/src/pages/Admin.tsx",
+    "frontend/src/pages/ProductDetail.tsx",
     "project_state.json"
   ]
 }

@@ -5,11 +5,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useProductById, useAddToCart } from '../hooks/useQueries';
 import { CATEGORY_LABELS, formatPrice } from '../lib/utils';
 
+function isDataUri(value: string): boolean {
+  return value.startsWith('data:image/');
+}
+
 export function ProductDetail() {
   const params = useParams({ from: '/product/$id' });
   const navigate = useNavigate();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const productId = BigInt(params.id);
   const { data: product, isLoading, isError } = useProductById(productId);
@@ -65,6 +70,7 @@ export function ProductDetail() {
   }
 
   const inStock = product.stock > BigInt(0);
+  const hasImage = product.image && isDataUri(product.image) && !imgError;
 
   return (
     <div className="animate-fade-in">
@@ -84,12 +90,21 @@ export function ProductDetail() {
           {/* Product Image */}
           <div className="relative">
             <div className="aspect-[3/4] bg-secondary rounded-sm overflow-hidden shadow-card flex items-center justify-center">
-              <div className="text-center p-12">
-                <div className="font-serif text-8xl text-accent/20 mb-4">✦</div>
-                <p className="font-sans text-xs tracking-studio uppercase text-muted-foreground/40">
-                  {product.name}
-                </p>
-              </div>
+              {hasImage ? (
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  onError={() => setImgError(true)}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-center p-12">
+                  <div className="font-serif text-8xl text-accent/20 mb-4">✦</div>
+                  <p className="font-sans text-xs tracking-studio uppercase text-muted-foreground/40">
+                    {product.name}
+                  </p>
+                </div>
+              )}
             </div>
             {/* Stock badge */}
             <div className={`absolute top-4 left-4 font-sans text-[10px] tracking-studio uppercase px-3 py-1 ${
