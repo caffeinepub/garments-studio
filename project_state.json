@@ -1,13 +1,12 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 25,
+  "projectStateVersion": 27,
   "summary": "A garments selling app (studio) named 'Dhimayu Studio' featuring female dresses, male shirts and t-shirts, and kids apparel.",
   "architectural_notes": [
     "App targets three main categories: female dresses, male shirts/t-shirts, and kids apparel"
   ],
   "known_issues": [],
   "isFixRequest": false,
-  "imageRequirements": "## Edit Images\n- Remove white background to make it fully transparent, preserving the black yin-yang graphic, both dots, and 'Dhi'/'MayU' text exactly as-is (logo black.png > dhimayu-logo-black.dim_400x400.png)",
   "existing_features": [
     {
       "id": "feature-build-a-homepage-landing-page-for-the-studio-it-must-feature-a-full-width-hero-banner-with-a-tagline-a-featured-collections-section-showing-all-four-categories-female-dresses-male-shirts-male-t-shirts-kids-apparel-as-visual-category-cards-and-a-short-brand-statement-use-the-generated-hero-banner-and-category-images-as-assets-from-frontend-public-assets-generated",
@@ -168,6 +167,14 @@
         "REQ-25"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-price-formatting-utility-in-frontend-src-lib-utils-ts-to-format-all-prices-using-the-indian-rupee-symbol-and-indian-number-formatting-e-g-1-499-or-1-499-00-replace-any-existing-currency-formatter-e-g-usd-format-with-one-that-uses-en-in-locale-and-inr-currency-or-equivalent-manual-formatting-this-single-change-must-cascade-to-every-component-that-calls-the-price-formatter",
+      "title": "Update the price formatting utility in frontend/src/lib/utils.ts to format all prices using the Indian Rupee symbol (₹) and Indian number formatting (e.g. ₹1,499 or ₹1,499.00). Replace any existing currency formatter (e.g. USD/$ format) with one that uses 'en-IN' locale and 'INR' currency, or equivalent manual formatting. This single change must cascade to every component that calls the price formatter.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -275,6 +282,12 @@
       "reqIds": [
         "REQ-22"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Change all price tags across the frontend to display in Indian currency (Rupees, ₹ symbol) instead of the current currency format",
+      "reqIds": [],
       "status": "pending"
     }
   ],

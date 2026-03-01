@@ -1,29 +1,25 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Replace logo with uploaded 'logo black.png' image",
+  "title": "Display all prices in Indian Rupees (₹) across the frontend",
   "requirements": [
     {
-      "id": "REQ-25",
-      "summary": "Replace existing logo in Header and Footer with the new transparent black logo image",
+      "id": "REQ-26",
+      "summary": "Update the price formatting utility to display all prices in Indian Rupees (₹) with Indian number formatting, ensuring the change cascades to every component that displays prices",
       "acceptanceCriteria": [
-        "The uploaded logo image is saved as dhimayu-logo-black.dim_400x400.png in frontend/public/assets/generated/",
-        "Header.tsx references dhimayu-logo-black.dim_400x400.png instead of the previous logo file",
-        "Footer.tsx references dhimayu-logo-black.dim_400x400.png instead of the previous logo file",
-        "No background color, bg-* class, or container box is applied behind the logo image in either Header or Footer",
-        "The logo renders with full transparency, blending seamlessly with the header and footer background surfaces",
-        "The yin-yang shape, both dots, and 'Dhi'/'MayU' text are clearly visible at the displayed size"
+        "The formatPrice (or equivalent) utility in utils.ts outputs prices with the ₹ symbol instead of $ or any other currency symbol.",
+        "Prices on the Product Catalog page (ProductCard.tsx) display in ₹ format.",
+        "Prices on the Product Detail page display in ₹ format.",
+        "Unit price and line totals on the Cart page display in ₹ format.",
+        "Order summary prices and the subtotal/total on the Checkout page display in ₹ format.",
+        "Product prices in the Admin Panel table/card list display in ₹ format.",
+        "No page in the app shows a $ or other non-INR currency symbol for any price."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/Header.tsx",
+          "path": "frontend/src/lib/utils.ts",
           "operation": "modify",
-          "description": "Update the logo image reference to use frontend/public/assets/generated/dhimayu-logo-black.dim_400x400.png instead of the current logo file. Remove any bg-* Tailwind classes or container elements wrapping the logo to ensure it renders transparently against the header background. Set appropriate width/height attributes so the yin-yang shape, both dots, and 'Dhi'/'MayU' text remain clearly legible."
-        },
-        {
-          "path": "frontend/src/components/Footer.tsx",
-          "operation": "modify",
-          "description": "Update the logo image reference to use frontend/public/assets/generated/dhimayu-logo-black.dim_400x400.png instead of the current logo file. Remove any bg-* Tailwind classes or container elements wrapping the logo to ensure it renders transparently against the footer background. Set appropriate width/height attributes so the yin-yang shape, both dots, and 'Dhi'/'MayU' text remain clearly legible."
+          "description": "Replace the existing formatPrice function to use Indian Rupee (₹) formatting. Change the Intl.NumberFormat locale from 'en-US' and currency from 'USD' to 'en-IN' locale and 'INR' currency. This will automatically format all prices with the ₹ symbol and Indian number formatting conventions (e.g., ₹1,499.00). Since all components (ProductCard, ProductDetail, Cart, Checkout, Admin) already call this utility function, this single change will cascade the INR format across the entire application."
         }
       ]
     }

@@ -1,12 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Replace the current logo in Header and Footer with a transparent version of the uploaded "logo black.png" image.
+**Goal:** Display all prices across the frontend using Indian Rupees (₹) instead of any other currency symbol.
 
 **Planned changes:**
-- Save the edited transparent logo as `dhimayu-logo-black.dim_400x400.png` in the assets folder
-- Update `Header.tsx` to use `dhimayu-logo-black.dim_400x400.png` instead of the previous logo
-- Update `Footer.tsx` to use `dhimayu-logo-black.dim_400x400.png` instead of the previous logo
-- Remove any background box, card, or `bg-*` Tailwind class applied behind the logo element in both components
+- Update the `formatPrice` (or equivalent) utility in `frontend/src/lib/utils.ts` to use the `₹` symbol with Indian number formatting (`en-IN` locale / `INR` currency)
+- This change cascades to all components that use the price formatter: ProductCard, Product Detail page, Cart page, Checkout page, and Admin Panel
 
-**User-visible outcome:** The header and footer display the new yin-yang Dhimayu logo with no background box, blending seamlessly with their backgrounds, with the yin-yang shape, both dots, and "Dhi"/"MayU" text clearly visible.
+**User-visible outcome:** Every price shown in the app (product listings, product detail, cart, checkout, admin panel) will display in Indian Rupees (e.g. ₹1,499) with no `$` or other currency symbols visible anywhere.

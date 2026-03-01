@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-save-the-uploaded-logo-image-as-dhimayu-logo-black-dim-400x400-png-in-frontend-public-assets-generated-then-update-header-tsx-and-footer-tsx-to-replace-the-currently-used-logo-image-dhimayu-logo-dim-400x400-png-with-this-new-file-the-image-must-be-rendered-without-any-background-box-card-container-or-bg-tailwind-class-behind-it-it-must-blend-seamlessly-with-the-header-and-footer-backgrounds-display-it-at-an-appropriate-size-so-the-yin-yang-shape-both-dots-and-the-dhi-mayu-text-are-all-clearly-legible",
-      "featureTitle": "Save the uploaded logo image as 'dhimayu-logo-black.dim_400x400.png' in frontend/public/assets/generated/. Then update Header.tsx and Footer.tsx to replace the currently used logo image (dhimayu-logo.dim_400x400.png) with this new file. The image must be rendered without any background box, card, container, or bg-* Tailwind class behind it — it must blend seamlessly with the header and footer backgrounds. Display it at an appropriate size so the yin-yang shape, both dots, and the 'Dhi'/'MayU' text are all clearly legible.",
+      "featureId": "feature-update-the-price-formatting-utility-in-frontend-src-lib-utils-ts-to-format-all-prices-using-the-indian-rupee-symbol-and-indian-number-formatting-e-g-1-499-or-1-499-00-replace-any-existing-currency-formatter-e-g-usd-format-with-one-that-uses-en-in-locale-and-inr-currency-or-equivalent-manual-formatting-this-single-change-must-cascade-to-every-component-that-calls-the-price-formatter",
+      "featureTitle": "Update the price formatting utility in frontend/src/lib/utils.ts to format all prices using the Indian Rupee symbol (₹) and Indian number formatting (e.g. ₹1,499 or ₹1,499.00). Replace any existing currency formatter (e.g. USD/$ format) with one that uses 'en-IN' locale and 'INR' currency, or equivalent manual formatting. This single change must cascade to every component that calls the price formatter.",
       "files": [
-        "frontend/src/components/Footer.tsx",
-        "frontend/src/components/Header.tsx"
+        "frontend/src/lib/utils.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -16,7 +15,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-25"
+        "REQ-26"
       ],
       "confidence": "high"
     }

@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T14:06:32.267Z",
+  "generatedAt": "2026-03-01T14:11:17.052Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -11,16 +11,14 @@
     "implemented": 1,
     "items": [
       {
-        "id": "REQ-25",
-        "summary": "Save the uploaded logo image as 'dhimayu-logo-black.dim_400x400.png' in frontend/public/assets/generated/. Then update Header.tsx and Footer.tsx to replace the currently used logo image (dhimayu-logo.dim_400x400.png) with this new file. The image must be rendered without any background box, card, container, or bg-* Tailwind class behind it — it must blend seamlessly with the header and footer backgrounds. Display it at an appropriate size so the yin-yang shape, both dots, and the 'Dhi'/'MayU' text are all clearly legible.",
+        "id": "REQ-26",
+        "summary": "Update the price formatting utility in frontend/src/lib/utils.ts to format all prices using the Indian Rupee symbol (₹) and Indian number formatting (e.g. ₹1,499 or ₹1,499.00). Replace any existing currency formatter (e.g. USD/$ format) with one that uses 'en-IN' locale and 'INR' currency, or equivalent manual formatting. This single change must cascade to every component that calls the price formatter.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/Header.tsx",
-          "frontend/src/components/Footer.tsx"
+          "frontend/src/lib/utils.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/Header.tsx",
-          "frontend/src/components/Footer.tsx"
+          "frontend/src/lib/utils.ts"
         ]
       }
     ]
@@ -30,9 +28,7 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/dhimayu-logo-black.dim_400x400.png",
-    "frontend/src/components/Footer.tsx",
-    "frontend/src/components/Header.tsx",
+    "frontend/src/lib/utils.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,44 +1,44 @@
 {
   "kind": "build_request",
-  "title": "Replace logo with uploaded 'logo black.png' image",
+  "title": "Display all prices in Indian Rupees (₹) across the frontend",
   "projectName": "Dhimayu Studio",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-25",
-      "text": "Save the uploaded logo image as 'dhimayu-logo-black.dim_400x400.png' in frontend/public/assets/generated/. Then update Header.tsx and Footer.tsx to replace the currently used logo image (dhimayu-logo.dim_400x400.png) with this new file. The image must be rendered without any background box, card, container, or bg-* Tailwind class behind it — it must blend seamlessly with the header and footer backgrounds. Display it at an appropriate size so the yin-yang shape, both dots, and the 'Dhi'/'MayU' text are all clearly legible.",
+      "id": "REQ-26",
+      "text": "Update the price formatting utility in frontend/src/lib/utils.ts to format all prices using the Indian Rupee symbol (₹) and Indian number formatting (e.g. ₹1,499 or ₹1,499.00). Replace any existing currency formatter (e.g. USD/$ format) with one that uses 'en-IN' locale and 'INR' currency, or equivalent manual formatting. This single change must cascade to every component that calls the price formatter.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "use this image as the logo"
+          "change all price tag is in indian currency- rupees"
         ]
       },
       "acceptanceCriteria": [
-        "The uploaded logo image is saved as dhimayu-logo-black.dim_400x400.png in frontend/public/assets/generated/",
-        "Header.tsx references dhimayu-logo-black.dim_400x400.png instead of the previous logo file",
-        "Footer.tsx references dhimayu-logo-black.dim_400x400.png instead of the previous logo file",
-        "No background color, bg-* class, or container box is applied behind the logo image in either Header or Footer",
-        "The logo renders with full transparency, blending seamlessly with the header and footer background surfaces",
-        "The yin-yang shape, both dots, and 'Dhi'/'MayU' text are clearly visible at the displayed size"
+        "The formatPrice (or equivalent) utility in utils.ts outputs prices with the ₹ symbol instead of $ or any other currency symbol.",
+        "Prices on the Product Catalog page (ProductCard.tsx) display in ₹ format.",
+        "Prices on the Product Detail page display in ₹ format.",
+        "Unit price and line totals on the Cart page display in ₹ format.",
+        "Order summary prices and the subtotal/total on the Checkout page display in ₹ format.",
+        "Product prices in the Admin Panel table/card list display in ₹ format.",
+        "No page in the app shows a $ or other non-INR currency symbol for any price."
       ]
     }
   ],
   "constraints": [
-    "Do not alter the logo image content — display it as-is without cropping, recoloring, or modifying the graphic",
-    "Do not add any white, cream, or colored background box or card behind the logo element"
+    "Do not change any backend price storage — prices remain as plain numbers in the Motoko actor.",
+    "Only the display/formatting layer in the frontend must be changed.",
+    "Do not modify any file listed under frontend.immutablePaths."
   ],
   "nonGoals": [
-    "Changing any other aspect of the header or footer layout",
-    "Modifying the colour scheme or typography",
-    "Updating any page other than Header.tsx and Footer.tsx"
+    "Currency conversion — prices are already stored as INR values; only the display format changes.",
+    "Adding a currency switcher or multi-currency support.",
+    "Changing the backend data model or any Motoko code."
   ],
   "imageRequirements": {
     "required": [],
-    "edits": [
-      "Remove white background to make it fully transparent, preserving the black yin-yang graphic, both dots, and 'Dhi'/'MayU' text exactly as-is (logo black.png > dhimayu-logo-black.dim_400x400.png)"
-    ]
+    "edits": []
   }
 }
