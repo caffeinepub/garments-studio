@@ -32,7 +32,10 @@ export const Order = IDL.Record({
   'timestamp' : IDL.Int,
   'items' : IDL.Vec(CartItem),
 });
-export const UserProfile = IDL.Record({ 'name' : IDL.Text });
+export const UserProfile = IDL.Record({
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+});
 export const Product = IDL.Record({
   'id' : IDL.Nat,
   'name' : IDL.Text,
@@ -51,7 +54,6 @@ export const StaticStoreContent = IDL.Record({
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addAdminPrincipal' : IDL.Func([IDL.Principal], [], []),
   'addProduct' : IDL.Func(
       [
         IDL.Text,
@@ -85,9 +87,7 @@ export const idlService = IDL.Service({
     ),
   'initializeStore' : IDL.Func([], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'isShouldBeAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'placeOrder' : IDL.Func([IDL.Vec(CartItem), IDL.Float64], [IDL.Nat], []),
-  'removeAdminPrincipal' : IDL.Func([IDL.Principal], [], []),
   'removeFromCart' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'updateProduct' : IDL.Func(
@@ -134,7 +134,7 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : IDL.Int,
     'items' : IDL.Vec(CartItem),
   });
-  const UserProfile = IDL.Record({ 'name' : IDL.Text });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text, 'email' : IDL.Text });
   const Product = IDL.Record({
     'id' : IDL.Nat,
     'name' : IDL.Text,
@@ -153,7 +153,6 @@ export const idlFactory = ({ IDL }) => {
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addAdminPrincipal' : IDL.Func([IDL.Principal], [], []),
     'addProduct' : IDL.Func(
         [
           IDL.Text,
@@ -191,9 +190,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'initializeStore' : IDL.Func([], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'isShouldBeAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'placeOrder' : IDL.Func([IDL.Vec(CartItem), IDL.Float64], [IDL.Nat], []),
-    'removeAdminPrincipal' : IDL.Func([IDL.Principal], [], []),
     'removeFromCart' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'updateProduct' : IDL.Func(

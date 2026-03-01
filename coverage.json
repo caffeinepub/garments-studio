@@ -1,26 +1,33 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T19:08:09.750Z",
+  "generatedAt": "2026-03-01T20:14:05.186Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
+    "total": 2,
     "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the Admin panel link in UserDropdown so it reliably appears for authenticated admin users. Audit the full chain: (1) the backend admin check endpoint/method, (2) the useIsCallerAdmin() hook to ensure it calls the backend using the authenticated identity (not anonymous), (3) the React Query cache key and stale/refetch behavior so the result updates after login, and (4) the conditional rendering logic in UserDropdown that gates the Admin link on the hook's return value. All four layers must be consistent and correct.",
+        "summary": "Expose a backend function that allows a privileged principal (e.g., the canister deployer / initial caller) to grant admin role to a specified principal, and add a one-time self-promotion path so the current authenticated user can be set as admin when no admin exists yet.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Add an 'Admin Setup' button or flow in the Admin page (or a standalone setup route) that allows an authenticated user to claim admin rights when no admin has been assigned yet. The button should call the backend promotion function and refresh the admin-check query on success.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/UserDropdown.tsx"
+          "frontend/src/pages/Admin.tsx"
         ],
         "matchedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/UserDropdown.tsx"
+          "frontend/src/pages/Admin.tsx"
         ]
       }
     ]
@@ -31,12 +38,8 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/UserDropdown.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/Admin.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

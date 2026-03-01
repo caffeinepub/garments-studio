@@ -37,6 +37,7 @@ export interface Order {
 }
 export interface UserProfile {
     name: string;
+    email: string;
 }
 export enum Category {
     maleTshirts = "maleTshirts",
@@ -50,7 +51,6 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    addAdminPrincipal(principal: Principal): Promise<void>;
     addProduct(name: string, category: Category, description: string, price: number, sizes: Array<string>, stock: bigint, image: string): Promise<bigint>;
     addToCart(productId: bigint, size: string, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -68,12 +68,7 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     initializeStore(): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
-    /**
-     * / Checks if principal is in hardcoded admin list only
-     */
-    isShouldBeAdmin(): Promise<boolean>;
     placeOrder(cartItems: Array<CartItem>, totalAmount: number): Promise<bigint>;
-    removeAdminPrincipal(principal: Principal): Promise<void>;
     removeFromCart(productId: bigint, size: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateProduct(id: bigint, name: string, category: Category, description: string, price: number, sizes: Array<string>, stock: bigint, image: string): Promise<void>;

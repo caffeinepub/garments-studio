@@ -34,7 +34,7 @@ export function Footer() {
           <div>
             <h4 className="font-sans text-xs tracking-studio uppercase text-accent mb-4">Collections</h4>
             <ul className="space-y-2">
-              {['Female Dresses', 'Male Shirts', 'Male T-Shirts', 'Kids Apparel'].map((item) => (
+              {['Female Dresses', 'Cotton Shirts', 'Graphic T-Shirts', 'Kids Apparel'].map((item) => (
                 <li key={item}>
                   <span className="font-sans text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
                     {item}
@@ -52,6 +52,14 @@ export function Footer() {
                   className="font-sans text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/admin"
+                  className="font-sans text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Admin Panel
                 </Link>
               </li>
               {['Sustainability', 'Size Guide', 'Contact'].map((item) => (

@@ -119,6 +119,7 @@ export interface Order {
 }
 export interface UserProfile {
     name: string;
+    email: string;
 }
 export enum Category {
     maleTshirts = "maleTshirts",
@@ -133,7 +134,6 @@ export enum UserRole {
 }
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
-    addAdminPrincipal(principal: Principal): Promise<void>;
     addProduct(name: string, category: Category, description: string, price: number, sizes: Array<string>, stock: bigint, image: string): Promise<bigint>;
     addToCart(productId: bigint, size: string, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -151,12 +151,7 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     initializeStore(): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
-    /**
-     * / Checks if principal is in hardcoded admin list only
-     */
-    isShouldBeAdmin(): Promise<boolean>;
     placeOrder(cartItems: Array<CartItem>, totalAmount: number): Promise<bigint>;
-    removeAdminPrincipal(principal: Principal): Promise<void>;
     removeFromCart(productId: bigint, size: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateProduct(id: bigint, name: string, category: Category, description: string, price: number, sizes: Array<string>, stock: bigint, image: string): Promise<void>;
@@ -176,20 +171,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor._initializeAccessControlWithSecret(arg0);
-            return result;
-        }
-    }
-    async addAdminPrincipal(arg0: Principal): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.addAdminPrincipal(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.addAdminPrincipal(arg0);
             return result;
         }
     }
@@ -431,20 +412,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async isShouldBeAdmin(): Promise<boolean> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.isShouldBeAdmin();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.isShouldBeAdmin();
-            return result;
-        }
-    }
     async placeOrder(arg0: Array<CartItem>, arg1: number): Promise<bigint> {
         if (this.processError) {
             try {
@@ -456,20 +423,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.placeOrder(arg0, arg1);
-            return result;
-        }
-    }
-    async removeAdminPrincipal(arg0: Principal): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.removeAdminPrincipal(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.removeAdminPrincipal(arg0);
             return result;
         }
     }

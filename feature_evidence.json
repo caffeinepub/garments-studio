@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-admin-panel-link-in-userdropdown-so-it-reliably-appears-for-authenticated-admin-users-audit-the-full-chain-1-the-backend-admin-check-endpoint-method-2-the-useiscalleradmin-hook-to-ensure-it-calls-the-backend-using-the-authenticated-identity-not-anonymous-3-the-react-query-cache-key-and-stale-refetch-behavior-so-the-result-updates-after-login-and-4-the-conditional-rendering-logic-in-userdropdown-that-gates-the-admin-link-on-the-hook-s-return-value-all-four-layers-must-be-consistent-and-correct",
-      "featureTitle": "Fix the Admin panel link in UserDropdown so it reliably appears for authenticated admin users. Audit the full chain: (1) the backend admin check endpoint/method, (2) the useIsCallerAdmin() hook to ensure it calls the backend using the authenticated identity (not anonymous), (3) the React Query cache key and stale/refetch behavior so the result updates after login, and (4) the conditional rendering logic in UserDropdown that gates the Admin link on the hook's return value. All four layers must be consistent and correct.",
+      "featureId": "feature-add-an-admin-setup-button-or-flow-in-the-admin-page-or-a-standalone-setup-route-that-allows-an-authenticated-user-to-claim-admin-rights-when-no-admin-has-been-assigned-yet-the-button-should-call-the-backend-promotion-function-and-refresh-the-admin-check-query-on-success",
+      "featureTitle": "Add an 'Admin Setup' button or flow in the Admin page (or a standalone setup route) that allows an authenticated user to claim admin rights when no admin has been assigned yet. The button should call the backend promotion function and refresh the admin-check query on success.",
       "files": [
-        "frontend/src/components/UserDropdown.tsx",
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/Admin.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -17,7 +17,7 @@
         "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-2"
       ],
       "confidence": "high"
     }

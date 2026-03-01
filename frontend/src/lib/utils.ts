@@ -15,8 +15,8 @@ export function formatPrice(price: number): string {
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   [Category.femaleDresses]: 'Female Dresses',
-  [Category.maleShirts]: 'Male Shirts',
-  [Category.maleTshirts]: 'Male T-Shirts',
+  [Category.maleShirts]: 'Cotton Shirts',
+  [Category.maleTshirts]: 'Graphic T-Shirts',
   [Category.kidsApparel]: 'Kids Apparel',
 };
 

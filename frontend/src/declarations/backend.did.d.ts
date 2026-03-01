@@ -42,13 +42,12 @@ export interface StaticStoreContent {
   'heroText' : string,
   'heroBanner' : string,
 }
-export interface UserProfile { 'name' : string }
+export interface UserProfile { 'name' : string, 'email' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addAdminPrincipal' : ActorMethod<[Principal], undefined>,
   'addProduct' : ActorMethod<
     [string, Category, string, number, Array<string>, bigint, string],
     bigint
@@ -69,12 +68,7 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'initializeStore' : ActorMethod<[], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  /**
-   * / Checks if principal is in hardcoded admin list only
-   */
-  'isShouldBeAdmin' : ActorMethod<[], boolean>,
   'placeOrder' : ActorMethod<[Array<CartItem>, number], bigint>,
-  'removeAdminPrincipal' : ActorMethod<[Principal], undefined>,
   'removeFromCart' : ActorMethod<[bigint, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'updateProduct' : ActorMethod<

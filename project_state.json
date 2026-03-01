@@ -3,22 +3,35 @@
   "projectStateVersion": 3,
   "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [
-    "Admin option not showing in dropdown menu (persists after multiple fix attempts)"
-  ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-the-admin-panel-link-in-userdropdown-so-it-reliably-appears-for-authenticated-admin-users-audit-the-full-chain-1-the-backend-admin-check-endpoint-method-2-the-useiscalleradmin-hook-to-ensure-it-calls-the-backend-using-the-authenticated-identity-not-anonymous-3-the-react-query-cache-key-and-stale-refetch-behavior-so-the-result-updates-after-login-and-4-the-conditional-rendering-logic-in-userdropdown-that-gates-the-admin-link-on-the-hook-s-return-value-all-four-layers-must-be-consistent-and-correct",
-      "title": "Fix the Admin panel link in UserDropdown so it reliably appears for authenticated admin users. Audit the full chain: (1) the backend admin check endpoint/method, (2) the useIsCallerAdmin() hook to ensure it calls the backend using the authenticated identity (not anonymous), (3) the React Query cache key and stale/refetch behavior so the result updates after login, and (4) the conditional rendering logic in UserDropdown that gates the Admin link on the hook's return value. All four layers must be consistent and correct.",
+      "id": "feature-add-an-admin-setup-button-or-flow-in-the-admin-page-or-a-standalone-setup-route-that-allows-an-authenticated-user-to-claim-admin-rights-when-no-admin-has-been-assigned-yet-the-button-should-call-the-backend-promotion-function-and-refresh-the-admin-check-query-on-success",
+      "title": "Add an 'Admin Setup' button or flow in the Admin page (or a standalone setup route) that allows an authenticated user to claim admin rights when no admin has been assigned yet. The button should call the backend promotion function and refresh the admin-check query on success.",
       "reqIds": [
-        "REQ-1"
+        "REQ-2"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Dhimayu Studio",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Add admin privilege/access control to the page",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Expose a backend function that allows a privileged principal (e.g., the canister deployer / initial caller) to grant admin role to a specified principal, and add a one-time self-promotion path so the current authenticated user can be set as admin when no admin exists yet.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Grant admin privilege to the current user",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

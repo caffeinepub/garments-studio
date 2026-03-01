@@ -12,6 +12,7 @@ import {
   Lock,
   FileText,
   CheckCircle2,
+  ShieldCheck,
 } from 'lucide-react';
 import { Category, type Product } from '../backend';
 import {
@@ -22,6 +23,7 @@ import {
   useGetStoreContent,
   useUpdateStoreContent,
   useIsCallerAdmin,
+  useClaimInitialAdmin,
 } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { CATEGORY_LABELS, ALL_CATEGORIES, formatPrice } from '../lib/utils';
@@ -158,8 +160,22 @@ function validateForm(form: ProductFormData): string | null {
   return null;
 }
 
-// ─── Access Denied Screen ─────────────────────────────────────────────────────
+// ─── Access Denied / Claim Admin Screen ──────────────────────────────────────
 function AccessDenied({ reason }: { reason: 'unauthenticated' | 'not-admin' }) {
+  const claimAdmin = useClaimInitialAdmin();
+  const [claimError, setClaimError] = useState<string | null>(null);
+
+  const handleClaim = async () => {
+    setClaimError(null);
+    try {
+      await claimAdmin.mutateAsync();
+    } catch (err) {
+      setClaimError(
+        err instanceof Error ? err.message : 'Failed to claim admin access. Please try again.',
+      );
+    }
+  };
+
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="text-center max-w-sm">
@@ -167,11 +183,43 @@ function AccessDenied({ reason }: { reason: 'unauthenticated' | 'not-admin' }) {
           <Lock className="w-7 h-7 text-muted-foreground" />
         </div>
         <h1 className="font-serif text-2xl text-foreground mb-3">Access Restricted</h1>
-        <p className="font-sans text-sm text-muted-foreground leading-relaxed">
+        <p className="font-sans text-sm text-muted-foreground leading-relaxed mb-6">
           {reason === 'unauthenticated'
             ? 'You must be logged in to access the admin panel. Please log in using the menu.'
             : 'Your account does not have admin privileges to access this page.'}
         </p>
+
+        {/* Claim Admin button — only shown for authenticated non-admin users */}
+        {reason === 'not-admin' && (
+          <div className="space-y-3">
+            <Button
+              onClick={handleClaim}
+              disabled={claimAdmin.isPending}
+              className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-widest uppercase gap-2 w-full"
+            >
+              {claimAdmin.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Claiming Access…
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4" />
+                  Claim Admin Access
+                </>
+              )}
+            </Button>
+            <p className="font-sans text-xs text-muted-foreground">
+              If no admin has been assigned yet, you can claim admin rights for this store.
+            </p>
+            {claimError && (
+              <div className="flex items-center gap-2 p-3 rounded border border-destructive/30 bg-destructive/10 text-destructive text-left">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <p className="font-sans text-xs">{claimError}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </main>
   );
@@ -543,16 +591,19 @@ export function Admin() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-secondary/40">
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground w-16">
+                      Image
+                    </TableHead>
                     <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
                       Name
                     </TableHead>
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden sm:table-cell">
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden md:table-cell">
                       Category
                     </TableHead>
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden sm:table-cell">
                       Price
                     </TableHead>
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden md:table-cell">
+                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden lg:table-cell">
                       Stock
                     </TableHead>
                     <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden lg:table-cell">
@@ -565,85 +616,58 @@ export function Admin() {
                 </TableHeader>
                 <TableBody>
                   {products.map((product) => (
-                    <TableRow
-                      key={product.id.toString()}
-                      className="hover:bg-secondary/20 transition-colors"
-                    >
+                    <TableRow key={product.id.toString()} className="hover:bg-secondary/20">
+                      {/* Thumbnail */}
                       <TableCell>
-                        <div className="flex items-center gap-3">
+                        <div className="w-10 h-12 rounded overflow-hidden bg-secondary flex items-center justify-center">
                           {product.image && product.image.startsWith('data:') ? (
                             <img
                               src={product.image}
                               alt={product.name}
-                              className="w-9 h-9 rounded object-cover shrink-0 border border-border"
+                              className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-9 h-9 rounded bg-secondary flex items-center justify-center shrink-0 border border-border">
-                              <ImageIcon className="w-4 h-4 text-muted-foreground/40" />
-                            </div>
+                            <ImageIcon className="w-4 h-4 text-muted-foreground/40" />
                           )}
-                          <div>
-                            <p className="font-sans text-sm font-medium text-foreground">
-                              {product.name}
-                            </p>
-                            <p className="font-sans text-xs text-muted-foreground sm:hidden">
-                              {CATEGORY_LABELS[product.category]}
-                            </p>
-                          </div>
                         </div>
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <Badge variant="outline" className="font-sans text-xs">
+                      <TableCell className="font-sans text-sm text-foreground font-medium">
+                        {product.name}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge
+                          variant="secondary"
+                          className="font-sans text-xs tracking-studio uppercase"
+                        >
                           {CATEGORY_LABELS[product.category]}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-sans text-sm text-accent font-medium">
+                      <TableCell className="font-sans text-sm text-foreground hidden sm:table-cell">
                         {formatPrice(product.price)}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <span
-                          className={`font-sans text-sm ${
-                            Number(product.stock) === 0
-                              ? 'text-destructive'
-                              : Number(product.stock) < 5
-                              ? 'text-warning'
-                              : 'text-foreground'
-                          }`}
-                        >
-                          {product.stock.toString()}
-                        </span>
+                      <TableCell className="font-sans text-sm text-muted-foreground hidden lg:table-cell">
+                        {product.stock.toString()}
                       </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        <div className="flex flex-wrap gap-1">
-                          {product.sizes.map((size) => (
-                            <span
-                              key={size}
-                              className="font-sans text-xs px-1.5 py-0.5 bg-secondary text-secondary-foreground rounded"
-                            >
-                              {size}
-                            </span>
-                          ))}
-                        </div>
+                      <TableCell className="font-sans text-xs text-muted-foreground hidden lg:table-cell">
+                        {product.sizes.join(', ')}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => openEditDialog(product)}
-                            className="h-8 w-8 text-muted-foreground hover:text-accent"
-                            aria-label={`Edit ${product.name}`}
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
                           >
-                            <Pencil className="w-4 h-4" />
+                            <Pencil className="w-3.5 h-3.5" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => openDeleteDialog(product)}
                             className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            aria-label={`Delete ${product.name}`}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
                       </TableCell>
@@ -661,12 +685,12 @@ export function Admin() {
         <ContentManagement />
       </div>
 
-      {/* Add / Edit Dialog */}
+      {/* ── Add / Edit Product Dialog ── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg bg-background border-border max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl text-foreground">
-              {editingProduct ? 'Edit Product' : 'Add Product'}
+            <DialogTitle className="font-serif text-xl text-foreground">
+              {editingProduct ? 'Edit Product' : 'Add New Product'}
             </DialogTitle>
           </DialogHeader>
 
@@ -674,7 +698,7 @@ export function Admin() {
             {/* Name */}
             <div className="space-y-1.5">
               <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Name <span className="text-destructive">*</span>
+                Product Name *
               </Label>
               <Input
                 value={form.name}
@@ -687,14 +711,14 @@ export function Admin() {
             {/* Category */}
             <div className="space-y-1.5">
               <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Category <span className="text-destructive">*</span>
+                Category
               </Label>
               <Select
                 value={form.category}
-                onValueChange={(val) => handleFormChange('category', val as Category)}
+                onValueChange={(val) => handleFormChange('category', val)}
               >
                 <SelectTrigger className="font-sans text-sm">
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {ALL_CATEGORIES.map((cat) => (
@@ -714,56 +738,53 @@ export function Admin() {
               <Textarea
                 value={form.description}
                 onChange={(e) => handleFormChange('description', e.target.value)}
-                placeholder="Product description..."
+                placeholder="Describe the product..."
                 className="font-sans text-sm resize-none"
                 rows={3}
               />
             </div>
 
-            {/* Price (INR) */}
-            <div className="space-y-1.5">
-              <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Price (₹) <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.price}
-                onChange={(e) => handleFormChange('price', e.target.value)}
-                placeholder="e.g. 1299"
-                className="font-sans text-sm"
-              />
+            {/* Price & Stock */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+                  Price (₹) *
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.price}
+                  onChange={(e) => handleFormChange('price', e.target.value)}
+                  placeholder="0.00"
+                  className="font-sans text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+                  Stock *
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.stock}
+                  onChange={(e) => handleFormChange('stock', e.target.value)}
+                  placeholder="0"
+                  className="font-sans text-sm"
+                />
+              </div>
             </div>
 
             {/* Sizes */}
             <div className="space-y-1.5">
               <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Sizes
+                Sizes (comma-separated)
               </Label>
               <Input
                 value={form.sizes}
                 onChange={(e) => handleFormChange('sizes', e.target.value)}
                 placeholder="e.g. S, M, L, XL"
-                className="font-sans text-sm"
-              />
-              <p className="font-sans text-xs text-muted-foreground">
-                Comma-separated list of available sizes.
-              </p>
-            </div>
-
-            {/* Stock */}
-            <div className="space-y-1.5">
-              <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Stock <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                type="number"
-                min="0"
-                step="1"
-                value={form.stock}
-                onChange={(e) => handleFormChange('stock', e.target.value)}
-                placeholder="e.g. 20"
                 className="font-sans text-sm"
               />
             </div>
@@ -775,19 +796,18 @@ export function Admin() {
               </Label>
 
               {imagePreview ? (
-                <div className="relative w-full">
+                <div className="relative w-full aspect-[3/4] max-h-48 rounded overflow-hidden border border-border bg-secondary">
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    className="w-full max-h-48 object-contain rounded border border-border bg-secondary"
+                    className="w-full h-full object-cover"
                   />
                   <button
                     type="button"
                     onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 p-1 rounded-full bg-background/80 border border-border text-muted-foreground hover:text-destructive transition-colors"
-                    aria-label="Remove image"
+                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-background transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5 text-foreground" />
                   </button>
                 </div>
               ) : (
@@ -804,9 +824,6 @@ export function Admin() {
                   )}
                   <span className="font-sans text-xs">
                     {isUploadingImage ? 'Processing image…' : 'Click to upload image'}
-                  </span>
-                  <span className="font-sans text-[10px] text-muted-foreground/60">
-                    JPG, PNG or WebP — auto-compressed
                   </span>
                 </button>
               )}
@@ -829,12 +846,11 @@ export function Admin() {
             )}
           </div>
 
-          <DialogFooter className="gap-2 pt-2">
+          <DialogFooter className="gap-2">
             <DialogClose asChild>
               <Button
                 variant="outline"
                 className="font-sans text-xs tracking-studio uppercase"
-                disabled={isMutating}
               >
                 Cancel
               </Button>
@@ -847,7 +863,7 @@ export function Admin() {
               {isMutating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  {editingProduct ? 'Saving…' : 'Adding…'}
+                  Saving…
                 </>
               ) : editingProduct ? (
                 'Save Changes'
@@ -859,9 +875,9 @@ export function Admin() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* ── Delete Confirmation Dialog ── */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-background border-border">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="font-serif text-xl text-foreground">
               Delete Product
