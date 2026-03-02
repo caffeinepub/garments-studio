@@ -1,53 +1,57 @@
 {
   "kind": "build_request",
-  "title": "Grant admin privilege to the current user",
-  "priority": "normal",
+  "title": "Fix Admin panel stuck on 'Verifying admin access' — page never loads",
+  "projectName": "Dhimayu Studio",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Expose a backend function that allows a privileged principal (e.g., the canister deployer / initial caller) to grant admin role to a specified principal, and add a one-time self-promotion path so the current authenticated user can be set as admin when no admin exists yet.",
-      "target": "backend",
+      "text": "Fix the Admin page so it no longer gets stuck indefinitely on the 'Verifying admin access' loading state. After a user authenticates via Internet Identity, the admin access check must always settle (resolve or reject) and either render the admin dashboard or display an unauthorized message — the page must never hang in a loading state.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "Give me admin privilege to the page"
+          "Verifying admin access is showing but nothing is opening, the page is not loading"
         ]
       },
       "acceptanceCriteria": [
-        "A backend function `grantAdmin(principal)` exists and can only be called by an existing admin or the canister controller.",
-        "If no admin exists, the first authenticated caller of `grantAdmin` (or a dedicated `claimInitialAdmin` function) is automatically promoted to admin.",
-        "Calling `isCallerAdmin` returns `true` for the promoted principal."
+        "After logging in with an admin account, the Admin page fully loads and displays the admin dashboard without remaining stuck on 'Verifying admin access'.",
+        "The admin access check query/logic always transitions out of its loading state — either to a success state (admin content rendered) or an error/unauthorized state (access denied message shown).",
+        "If the user is not an admin, a clear 'Access Denied' or equivalent message is displayed instead of an infinite spinner.",
+        "The fix works consistently on repeated logins without requiring a page refresh.",
+        "No regression: non-admin routes continue to function normally."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add an 'Admin Setup' button or flow in the Admin page (or a standalone setup route) that allows an authenticated user to claim admin rights when no admin has been assigned yet. The button should call the backend promotion function and refresh the admin-check query on success.",
+      "text": "Audit and fix the admin-gating query logic in useQueries.ts to ensure the admin role check never enters a permanently pending state. The query must handle all edge cases (actor not ready, identity loading, backend returning no result) by providing explicit fallback values or enabled conditions so the query always settles.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "Give me admin privilege to the page"
+          "Verifying admin access is showing but nothing is opening, the page is not loading"
         ]
       },
       "acceptanceCriteria": [
-        "When no admin exists, an authenticated user sees a 'Claim Admin Access' button on the Admin page instead of the access-denied screen.",
-        "Clicking the button calls the backend claim function and, on success, reloads the admin status query so the full admin dashboard becomes visible.",
-        "If an admin already exists and the caller is not admin, the existing access-denied screen is still shown with no claim button."
+        "The admin role check query in useQueries.ts has an `enabled` guard that prevents it from running until the actor and identity are fully initialized.",
+        "The query has a defined `staleTime` or `retry` policy that prevents it from indefinitely retrying on failure.",
+        "The query always resolves to a boolean (true/false) or throws a catchable error — it never stays in `isLoading: true` indefinitely.",
+        "Admin.tsx reads the settled query result and renders the appropriate UI state (loading → content or unauthorized) within a reasonable timeout."
       ]
     }
   ],
   "constraints": [
     "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Keep all Motoko logic in backend/main.mo (single-actor architecture)."
+    "All fixes must remain within the single-actor backend architecture; no new backend endpoints unless strictly necessary."
   ],
   "nonGoals": [
-    "Adding multiple admin roles or granular permission levels.",
-    "Changing the existing product management or order management features.",
-    "Implementing email or external notification on admin promotion."
+    "Changing the authentication provider or switching away from Internet Identity.",
+    "Redesigning the Admin UI layout or adding new admin features.",
+    "Modifying backend role/access control logic unless the frontend fix alone is insufficient."
   ],
   "imageRequirements": {
     "required": [],

@@ -1,37 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "Project involves an admin panel with login/access functionality that is experiencing loading issues.",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Admin panel page not loading after login with dhimayustudio@gmail.com — 'Verifying admin access' shows but page fails to open"
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-an-admin-setup-button-or-flow-in-the-admin-page-or-a-standalone-setup-route-that-allows-an-authenticated-user-to-claim-admin-rights-when-no-admin-has-been-assigned-yet-the-button-should-call-the-backend-promotion-function-and-refresh-the-admin-check-query-on-success",
-      "title": "Add an 'Admin Setup' button or flow in the Admin page (or a standalone setup route) that allows an authenticated user to claim admin rights when no admin has been assigned yet. The button should call the backend promotion function and refresh the admin-check query on success.",
+      "id": "feature-fix-the-admin-page-so-it-no-longer-gets-stuck-indefinitely-on-the-verifying-admin-access-loading-state-after-a-user-authenticates-via-internet-identity-the-admin-access-check-must-always-settle-resolve-or-reject-and-either-render-the-admin-dashboard-or-display-an-unauthorized-message-the-page-must-never-hang-in-a-loading-state",
+      "title": "Fix the Admin page so it no longer gets stuck indefinitely on the 'Verifying admin access' loading state. After a user authenticates via Internet Identity, the admin access check must always settle (resolve or reject) and either render the admin dashboard or display an unauthorized message — the page must never hang in a loading state.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-the-admin-gating-query-logic-in-usequeries-ts-to-ensure-the-admin-role-check-never-enters-a-permanently-pending-state-the-query-must-handle-all-edge-cases-actor-not-ready-identity-loading-backend-returning-no-result-by-providing-explicit-fallback-values-or-enabled-conditions-so-the-query-always-settles",
+      "title": "Audit and fix the admin-gating query logic in useQueries.ts to ensure the admin role check never enters a permanently pending state. The query must handle all edge cases (actor not ready, identity loading, backend returning no result) by providing explicit fallback values or enabled conditions so the query always settles.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Add admin privilege/access control to the page",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Expose a backend function that allows a privileged principal (e.g., the canister deployer / initial caller) to grant admin role to a specified principal, and add a one-time self-promotion path so the current authenticated user can be set as admin when no admin exists yet.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "status": "pending"
-    }
-  ],
-  "projectName": "Grant admin privilege to the current user",
+  "new_feature_requests": [],
+  "projectName": "Dhimayu Studio",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -8,6 +8,8 @@ import Text "mo:core/Text";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
+
+
 actor {
   // Types
   type Category = {
@@ -54,9 +56,6 @@ actor {
     email : Text;
   };
 
-  // Hardcoded admin email
-  let ADMIN_EMAIL : Text = "dhimayustudio@gmail.com";
-
   // Authorization instance
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -100,10 +99,6 @@ actor {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
     userProfiles.add(caller, profile);
-    // If the user's email matches the hardcoded admin email, grant admin role
-    if (profile.email == ADMIN_EMAIL) {
-      AccessControl.assignRole(accessControlState, caller, caller, #admin);
-    };
   };
 
   /* ----------------------------- Store Initialization (Admin Only) ------------------------ */

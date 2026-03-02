@@ -1,40 +1,29 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T20:14:05.184Z",
-  "summary": "REQ-2 (frontend claim flow) appears largely implemented. REQ-1 (backend grantAdmin function with proper access control) is only partially implemented — a dedicated `grantAdmin(principal)` function callable by existing admin/controller is not evidenced; instead a workaround via `assignCallerUserRole` is used. An unrequested hardcoded admin email promotion path was also added.",
+  "generatedAt": "2026-03-02T04:09:03.772Z",
+  "summary": "The diff addresses both REQ-1 and REQ-2 by modifying useQueries.ts (adding retry:false, staleTime, and enabled guards for useIsCallerAdmin) and Admin.tsx (adding a timeout constant ADMIN_CHECK_TIMEOUT_MS and updated rendering logic). Most acceptance criteria appear to be met, though the truncated diff prevents full verification of some details like the timeout-based fallback implementation and the enabled guard in useIsCallerAdmin.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "A backend function `grantAdmin(principal)` exists and can only be called by an existing admin or the canister controller.",
-      "reason": "No `grantAdmin(principal)` function is visible in the diff. The frontend uses `assignCallerUserRole` instead, which does not match the specified function name or demonstrate the required access-control guard (existing admin or canister controller only).",
+      "id": "REQ-2",
+      "requirement": "The admin role check query in useQueries.ts has an `enabled` guard that prevents it from running until the actor and identity are fully initialized.",
+      "reason": "The diff summary mentions retry:false and staleTime for useIsCallerAdmin but the useQueries.ts content is truncated before the useIsCallerAdmin function is visible. We cannot confirm an explicit enabled guard checking both actor and identity initialization is present.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "If no admin exists, the first authenticated caller of `grantAdmin` (or a dedicated `claimInitialAdmin` function) is automatically promoted to admin.",
-      "reason": "No dedicated `claimInitialAdmin` backend function is evidenced in the diff. The claim path uses `assignCallerUserRole`, and whether it enforces a 'no admin exists' guard on the backend is not demonstrated in the truncated diff.",
-      "evidence": [
-        "backend/main.mo",
         "frontend/src/hooks/useQueries.ts"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Hardcoded admin email promotion: when a user saves a profile with email 'dhimayustudio@gmail.com', they are automatically granted admin role via `saveCallerUserProfile`.",
-      "reason": "The build request does not mention any email-based admin promotion path. The non-goals explicitly exclude email-related notification or promotion logic, and no email-matching mechanism was requested.",
+      "description": "A RefreshCw icon is imported in Admin.tsx, suggesting a manual refresh or retry button was added to the admin UI.",
+      "reason": "The build request does not mention adding a refresh or retry button to the Admin page UI. This appears to be an extra UI feature not requested.",
       "evidence": [
-        "backend/main.mo"
+        "frontend/src/pages/Admin.tsx"
       ]
     }
   ],
-  "confidence": 0.65,
+  "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
     "frontend/src/hooks/useQueries.ts",
     "frontend/src/pages/Admin.tsx",

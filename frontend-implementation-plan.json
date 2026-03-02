@@ -1,26 +1,40 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Grant admin privilege to the current user",
+  "title": "Fix Admin Panel Infinite Loading State",
   "requirements": [
     {
-      "id": "REQ-2",
-      "summary": "Add an 'Admin Setup' button or flow in the Admin page that allows an authenticated user to claim admin rights when no admin has been assigned yet",
+      "id": "REQ-1",
+      "summary": "Fix the Admin page so it no longer gets stuck indefinitely on the 'Verifying admin access' loading state",
       "acceptanceCriteria": [
-        "When no admin exists, an authenticated user sees a 'Claim Admin Access' button on the Admin page instead of the access-denied screen.",
-        "Clicking the button calls the backend claim function and, on success, reloads the admin status query so the full admin dashboard becomes visible.",
-        "If an admin already exists and the caller is not admin, the existing access-denied screen is still shown with no claim button."
+        "After logging in with an admin account, the Admin page fully loads and displays the admin dashboard without remaining stuck on 'Verifying admin access'.",
+        "The admin access check query/logic always transitions out of its loading state — either to a success state (admin content rendered) or an error/unauthorized state (access denied message shown).",
+        "If the user is not an admin, a clear 'Access Denied' or equivalent message is displayed instead of an infinite spinner.",
+        "The fix works consistently on repeated logins without requiring a page refresh.",
+        "No regression: non-admin routes continue to function normally."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/Admin.tsx",
+          "operation": "modify",
+          "description": "Update the admin access verification logic to properly handle all query states (loading, error, success) and ensure the UI always settles. Replace the current loading check with logic that accounts for both actor readiness and query completion. Add explicit error boundary and unauthorized state rendering. Ensure the isAdmin check reads from the settled query result and displays appropriate UI for all three states: loading (with timeout fallback), authorized (admin dashboard), and unauthorized (access denied message)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Audit and fix the admin-gating query logic in useQueries.ts to ensure the admin role check never enters a permanently pending state",
+      "acceptanceCriteria": [
+        "The admin role check query in useQueries.ts has an `enabled` guard that prevents it from running until the actor and identity are fully initialized.",
+        "The query has a defined `staleTime` or `retry` policy that prevents it from indefinitely retrying on failure.",
+        "The query always resolves to a boolean (true/false) or throws a catchable error — it never stays in `isLoading: true` indefinitely.",
+        "Admin.tsx reads the settled query result and renders the appropriate UI state (loading → content or unauthorized) within a reasonable timeout."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add a new mutation hook `useClaimInitialAdmin` that calls the backend `assignCallerUserRole` method with the caller's own principal and the admin role. This hook should invalidate the 'isCallerAdmin' query on success to refresh the admin status check."
-        },
-        {
-          "path": "frontend/src/pages/Admin.tsx",
-          "operation": "modify",
-          "description": "Modify the access-denied section to conditionally show a 'Claim Admin Access' button when `isCallerAdmin` is false. When clicked, the button should call the `useClaimInitialAdmin` mutation. On success, the `isCallerAdmin` query will be invalidated and refetched automatically, revealing the full admin dashboard. Include loading and error states for the mutation. The button should only appear when the user is authenticated (not anonymous). Use the authorization component's self-promotion capability to allow the first authenticated user to become admin when no admin exists."
+          "description": "Fix the useIsCallerAdmin query hook to include proper enabled guards that check both actor availability and actorFetching state. Add explicit query configuration with retry: false and appropriate staleTime to prevent infinite pending states. Ensure the query returns a properly typed result that always settles to either a boolean value or throws a catchable error. The enabled condition must be: enabled: !!actor && !actorFetching. Add custom return state similar to useGetCallerUserProfile pattern to properly expose actor dependency in isLoading."
         }
       ]
     }

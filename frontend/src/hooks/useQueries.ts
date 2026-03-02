@@ -321,28 +321,33 @@ export function useSaveCallerUserProfile() {
 export function useIsCallerAdmin() {
   const { actor, isFetching: actorFetching } = useActor();
   const { identity } = useInternetIdentity();
-  const isAuthenticated = !!identity;
+  const isAuthenticated = !!identity && !identity.getPrincipal().isAnonymous();
 
   const query = useQuery<boolean>({
     queryKey: ['isCallerAdmin'],
     queryFn: async () => {
-      if (!actor) return false;
-      try {
-        return await actor.isCallerAdmin();
-      } catch {
-        return false;
-      }
+      if (!actor) throw new Error('Actor not available');
+      const result = await actor.isCallerAdmin();
+      return result;
     },
-    enabled: !!actor && isAuthenticated,
-    staleTime: 0,
+    // Only run when actor is fully ready (not fetching) and user is authenticated
+    enabled: !!actor && !actorFetching && isAuthenticated,
+    staleTime: 30_000,
     retry: false,
   });
+
+  // isLoading is true only when the query is actively fetching for the first time
+  // OR when the actor itself is still initializing
+  const isLoading = actorFetching || (isAuthenticated && query.isLoading);
+
+  // isFetched is true only when the actor is ready AND the query has completed at least once
+  const isFetched = !actorFetching && !!actor && query.isFetched;
 
   return {
     ...query,
     isAdmin: query.data === true,
-    isLoading: actorFetching || query.isLoading || query.isFetching,
-    isFetched: !!actor && query.isFetched,
+    isLoading,
+    isFetched,
   };
 }
 

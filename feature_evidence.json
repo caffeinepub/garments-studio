@@ -2,11 +2,29 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-an-admin-setup-button-or-flow-in-the-admin-page-or-a-standalone-setup-route-that-allows-an-authenticated-user-to-claim-admin-rights-when-no-admin-has-been-assigned-yet-the-button-should-call-the-backend-promotion-function-and-refresh-the-admin-check-query-on-success",
-      "featureTitle": "Add an 'Admin Setup' button or flow in the Admin page (or a standalone setup route) that allows an authenticated user to claim admin rights when no admin has been assigned yet. The button should call the backend promotion function and refresh the admin-check query on success.",
+      "featureId": "feature-fix-the-admin-page-so-it-no-longer-gets-stuck-indefinitely-on-the-verifying-admin-access-loading-state-after-a-user-authenticates-via-internet-identity-the-admin-access-check-must-always-settle-resolve-or-reject-and-either-render-the-admin-dashboard-or-display-an-unauthorized-message-the-page-must-never-hang-in-a-loading-state",
+      "featureTitle": "Fix the Admin page so it no longer gets stuck indefinitely on the 'Verifying admin access' loading state. After a user authenticates via Internet Identity, the admin access check must always settle (resolve or reject) and either render the admin dashboard or display an unauthorized message — the page must never hang in a loading state.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
         "frontend/src/pages/Admin.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-audit-and-fix-the-admin-gating-query-logic-in-usequeries-ts-to-ensure-the-admin-role-check-never-enters-a-permanently-pending-state-the-query-must-handle-all-edge-cases-actor-not-ready-identity-loading-backend-returning-no-result-by-providing-explicit-fallback-values-or-enabled-conditions-so-the-query-always-settles",
+      "featureTitle": "Audit and fix the admin-gating query logic in useQueries.ts to ensure the admin role check never enters a permanently pending state. The query must handle all edge cases (actor not ready, identity loading, backend returning no result) by providing explicit fallback values or enabled conditions so the query always settles.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",

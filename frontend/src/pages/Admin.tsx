@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Pencil,
   Trash2,
@@ -13,6 +13,7 @@ import {
   FileText,
   CheckCircle2,
   ShieldCheck,
+  RefreshCw,
 } from 'lucide-react';
 import { Category, type Product } from '../backend';
 import {
@@ -66,12 +67,14 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 
 // Max dimensions for resized image (keeps file size small enough for ICP)
 const MAX_IMAGE_WIDTH = 600;
 const MAX_IMAGE_HEIGHT = 800;
 const IMAGE_QUALITY = 0.75;
+
+// Timeout in ms before we stop waiting and show an error
+const ADMIN_CHECK_TIMEOUT_MS = 20000;
 
 /**
  * Resize and compress an image file using Canvas API.
@@ -161,7 +164,7 @@ function validateForm(form: ProductFormData): string | null {
 }
 
 // ─── Access Denied / Claim Admin Screen ──────────────────────────────────────
-function AccessDenied({ reason }: { reason: 'unauthenticated' | 'not-admin' }) {
+function AccessDenied({ reason }: { reason: 'unauthenticated' | 'not-admin' | 'error' }) {
   const claimAdmin = useClaimInitialAdmin();
   const [claimError, setClaimError] = useState<string | null>(null);
 
@@ -182,12 +185,26 @@ function AccessDenied({ reason }: { reason: 'unauthenticated' | 'not-admin' }) {
         <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
           <Lock className="w-7 h-7 text-muted-foreground" />
         </div>
-        <h1 className="font-serif text-2xl text-foreground mb-3">Access Restricted</h1>
+        <h1 className="font-serif text-2xl text-foreground mb-3">
+          {reason === 'error' ? 'Connection Error' : 'Access Restricted'}
+        </h1>
         <p className="font-sans text-sm text-muted-foreground leading-relaxed mb-6">
           {reason === 'unauthenticated'
             ? 'You must be logged in to access the admin panel. Please log in using the menu.'
-            : 'Your account does not have admin privileges to access this page.'}
+            : reason === 'error'
+              ? 'Unable to verify admin status. The backend may be unavailable. Please try refreshing the page.'
+              : 'Your account does not have admin privileges to access this page.'}
         </p>
+
+        {reason === 'error' && (
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-widest uppercase gap-2 w-full"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh Page
+          </Button>
+        )}
 
         {/* Claim Admin button — only shown for authenticated non-admin users */}
         {reason === 'not-admin' && (
@@ -369,7 +386,13 @@ export function Admin() {
   const { identity, isInitializing } = useInternetIdentity();
   const isAuthenticated = !!identity && !identity.getPrincipal().isAnonymous();
 
-  const { data: isAdmin, isLoading: adminCheckLoading } = useIsCallerAdmin();
+  const {
+    isAdmin,
+    isLoading: adminCheckLoading,
+    isFetched: adminCheckFetched,
+    isError: adminCheckError,
+    refetch: refetchAdminCheck,
+  } = useIsCallerAdmin();
 
   const { data: products, isLoading, isError } = useProducts();
   const addProduct = useAddProduct();
@@ -387,23 +410,127 @@ export function Admin() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 
-  // Show loading while identity is initializing or admin check is in progress
-  if (isInitializing || (isAuthenticated && adminCheckLoading)) {
+  // Timeout state: if loading takes too long, show an error
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    // Only start the timeout when authenticated and actively loading
+    if (!isAuthenticated || !adminCheckLoading || timedOut) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      setTimedOut(true);
+    }, ADMIN_CHECK_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, adminCheckLoading, timedOut]);
+
+  // Reset timeout when the query succeeds or errors
+  useEffect(() => {
+    if (adminCheckFetched || adminCheckError) {
+      setTimedOut(false);
+    }
+  }, [adminCheckFetched, adminCheckError]);
+
+  // ── Render guards ──────────────────────────────────────────────────────────
+
+  // 1. Wait for identity to initialize
+  if (isInitializing) {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-accent mx-auto" />
+          <p className="font-sans text-sm text-muted-foreground">Loading…</p>
+        </div>
       </main>
     );
   }
 
-  // Auth guard
+  // 2. Auth guard — must be logged in
   if (!isAuthenticated) {
     return <AccessDenied reason="unauthenticated" />;
   }
 
-  if (isAdmin === false) {
+  // 3. Timed out — show retry screen
+  if (timedOut) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center max-w-sm space-y-4">
+          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto">
+            <AlertCircle className="w-7 h-7 text-muted-foreground" />
+          </div>
+          <h1 className="font-serif text-2xl text-foreground">Verification Failed</h1>
+          <p className="font-sans text-sm text-muted-foreground leading-relaxed">
+            Could not verify your admin status. This may be a temporary network issue.
+          </p>
+          <Button
+            onClick={() => {
+              setTimedOut(false);
+              refetchAdminCheck();
+            }}
+            className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-widest uppercase gap-2 w-full"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
+  // 4. Query error — show error screen
+  if (adminCheckError && !adminCheckLoading) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center max-w-sm space-y-4">
+          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto">
+            <AlertCircle className="w-7 h-7 text-muted-foreground" />
+          </div>
+          <h1 className="font-serif text-2xl text-foreground">Verification Failed</h1>
+          <p className="font-sans text-sm text-muted-foreground leading-relaxed">
+            Could not verify your admin status. This may be a temporary network issue.
+          </p>
+          <Button
+            onClick={() => refetchAdminCheck()}
+            className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-widest uppercase gap-2 w-full"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
+  // 5. Still loading admin check
+  if (adminCheckLoading && !adminCheckFetched) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-accent mx-auto" />
+          <p className="font-sans text-sm text-muted-foreground">Verifying admin access…</p>
+        </div>
+      </main>
+    );
+  }
+
+  // 6. Fetched but not admin
+  if (adminCheckFetched && !isAdmin) {
     return <AccessDenied reason="not-admin" />;
   }
+
+  // 7. Not yet fetched and not loading — edge case, show loading
+  if (!adminCheckFetched && !adminCheckLoading) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-accent mx-auto" />
+          <p className="font-sans text-sm text-muted-foreground">Verifying admin access…</p>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Admin dashboard ────────────────────────────────────────────────────────
 
   const openAddDialog = () => {
     setEditingProduct(null);
@@ -455,14 +582,7 @@ export function Admin() {
       setFormError('Failed to process image. Please try a different file.');
     } finally {
       setIsUploadingImage(false);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setImagePreview(null);
-    setForm((prev) => ({ ...prev, image: '' }));
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -473,31 +593,37 @@ export function Admin() {
       return;
     }
 
-    const sizesArray = form.sizes
+    const sizes = form.sizes
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const payload = {
-      name: form.name.trim(),
-      category: form.category,
-      description: form.description.trim(),
-      price: Number(form.price),
-      sizes: sizesArray,
-      stock: BigInt(Math.floor(Number(form.stock))),
-      image: form.image,
-    };
-
     try {
       if (editingProduct) {
-        await updateProduct.mutateAsync({ id: editingProduct.id, ...payload });
+        await updateProduct.mutateAsync({
+          id: editingProduct.id,
+          name: form.name,
+          category: form.category,
+          description: form.description,
+          price: Number(form.price),
+          sizes,
+          stock: BigInt(form.stock),
+          image: form.image,
+        });
       } else {
-        await addProduct.mutateAsync(payload);
+        await addProduct.mutateAsync({
+          name: form.name,
+          category: form.category,
+          description: form.description,
+          price: Number(form.price),
+          sizes,
+          stock: BigInt(form.stock),
+          image: form.image,
+        });
       }
       setDialogOpen(false);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred. Please try again.';
-      setFormError(message);
+      setFormError(err instanceof Error ? err.message : 'Failed to save product.');
     }
   };
 
@@ -508,7 +634,7 @@ export function Admin() {
       setDeleteDialogOpen(false);
       setDeletingProduct(null);
     } catch {
-      // error handled by mutation state
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -516,100 +642,82 @@ export function Admin() {
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Page Header */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
         <div className="mb-10">
-          <p className="font-sans text-xs tracking-studio uppercase text-accent mb-2">
-            Admin Dashboard
-          </p>
-          <h1 className="font-serif text-3xl md:text-4xl text-foreground tracking-wide">
-            Store Management
-          </h1>
-          <p className="font-sans text-sm text-muted-foreground mt-1">
-            Manage your products and store content from one place.
+          <div className="flex items-center gap-2 mb-1">
+            <Package className="w-5 h-5 text-accent" />
+            <h1 className="font-serif text-3xl md:text-4xl text-foreground tracking-wide">
+              Admin Panel
+            </h1>
+          </div>
+          <p className="font-sans text-sm text-muted-foreground">
+            Manage your store's products and content.
           </p>
         </div>
 
-        {/* ── Products Section ── */}
+        {/* Products Section */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="font-serif text-2xl md:text-3xl text-foreground tracking-wide">
-                Product Management
+                Products
               </h2>
               <p className="font-sans text-sm text-muted-foreground mt-0.5">
-                Add, edit, or remove products from the store.
+                {products ? `${products.length} product${products.length !== 1 ? 's' : ''}` : ''}
               </p>
             </div>
             <Button
               onClick={openAddDialog}
-              className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-studio uppercase gap-2"
+              className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-widest uppercase gap-2"
             >
               <Plus className="w-4 h-4" />
               Add Product
             </Button>
           </div>
 
-          {/* Error State */}
-          {isError && (
-            <div className="flex items-center gap-3 p-4 rounded border border-destructive/30 bg-destructive/10 text-destructive mb-6">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <p className="font-sans text-sm">Failed to load products. Please refresh the page.</p>
-            </div>
-          )}
-
-          {/* Loading State */}
-          {isLoading && (
+          {isLoading ? (
             <div className="space-y-3">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {[...Array(4)].map((_, i) => (
                 <Skeleton key={i} className="h-14 w-full rounded" />
               ))}
             </div>
-          )}
-
-          {/* Empty State */}
-          {!isLoading && !isError && products?.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <Package className="w-12 h-12 text-muted-foreground/40 mb-4" />
-              <p className="font-serif text-xl text-muted-foreground mb-2">No products yet</p>
-              <p className="font-sans text-sm text-muted-foreground mb-6">
-                Get started by adding your first product.
-              </p>
+          ) : isError ? (
+            <div className="flex items-center gap-2 p-4 rounded border border-destructive/30 bg-destructive/10 text-destructive">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <p className="font-sans text-sm">Failed to load products. Please refresh.</p>
+            </div>
+          ) : !products || products.length === 0 ? (
+            <div className="text-center py-16 border border-dashed border-border rounded">
+              <Package className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-sans text-sm text-muted-foreground mb-4">No products yet.</p>
               <Button
                 onClick={openAddDialog}
-                className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-studio uppercase gap-2"
+                variant="outline"
+                className="font-sans text-xs tracking-widest uppercase gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Add Product
+                Add First Product
               </Button>
             </div>
-          )}
-
-          {/* Products Table */}
-          {!isLoading && !isError && products && products.length > 0 && (
+          ) : (
             <div className="border border-border rounded overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-secondary/40">
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground w-16">
-                      Image
+                    <TableHead className="font-sans text-xs tracking-widest uppercase text-muted-foreground">
+                      Product
                     </TableHead>
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                      Name
-                    </TableHead>
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden md:table-cell">
+                    <TableHead className="font-sans text-xs tracking-widest uppercase text-muted-foreground hidden md:table-cell">
                       Category
                     </TableHead>
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden sm:table-cell">
+                    <TableHead className="font-sans text-xs tracking-widest uppercase text-muted-foreground hidden sm:table-cell">
                       Price
                     </TableHead>
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden lg:table-cell">
+                    <TableHead className="font-sans text-xs tracking-widest uppercase text-muted-foreground hidden sm:table-cell">
                       Stock
                     </TableHead>
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground hidden lg:table-cell">
-                      Sizes
-                    </TableHead>
-                    <TableHead className="font-sans text-xs tracking-studio uppercase text-muted-foreground text-right">
+                    <TableHead className="font-sans text-xs tracking-widest uppercase text-muted-foreground text-right">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -617,42 +725,45 @@ export function Admin() {
                 <TableBody>
                   {products.map((product) => (
                     <TableRow key={product.id.toString()} className="hover:bg-secondary/20">
-                      {/* Thumbnail */}
                       <TableCell>
-                        <div className="w-10 h-12 rounded overflow-hidden bg-secondary flex items-center justify-center">
+                        <div className="flex items-center gap-3">
                           {product.image && product.image.startsWith('data:') ? (
                             <img
                               src={product.image}
                               alt={product.name}
-                              className="w-full h-full object-cover"
+                              className="w-10 h-10 object-cover rounded border border-border shrink-0"
                             />
                           ) : (
-                            <ImageIcon className="w-4 h-4 text-muted-foreground/40" />
+                            <div className="w-10 h-10 rounded border border-border bg-secondary flex items-center justify-center shrink-0">
+                              <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                            </div>
                           )}
+                          <div>
+                            <p className="font-sans text-sm font-medium text-foreground">
+                              {product.name}
+                            </p>
+                            <p className="font-sans text-xs text-muted-foreground md:hidden">
+                              {CATEGORY_LABELS[product.category]}
+                            </p>
+                          </div>
                         </div>
-                      </TableCell>
-                      <TableCell className="font-sans text-sm text-foreground font-medium">
-                        {product.name}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <Badge
                           variant="secondary"
-                          className="font-sans text-xs tracking-studio uppercase"
+                          className="font-sans text-xs tracking-wide"
                         >
                           {CATEGORY_LABELS[product.category]}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-sans text-sm text-foreground hidden sm:table-cell">
+                      <TableCell className="font-sans text-sm hidden sm:table-cell">
                         {formatPrice(product.price)}
                       </TableCell>
-                      <TableCell className="font-sans text-sm text-muted-foreground hidden lg:table-cell">
+                      <TableCell className="font-sans text-sm hidden sm:table-cell">
                         {product.stock.toString()}
                       </TableCell>
-                      <TableCell className="font-sans text-xs text-muted-foreground hidden lg:table-cell">
-                        {product.sizes.join(', ')}
-                      </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-2">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -679,43 +790,96 @@ export function Admin() {
           )}
         </section>
 
-        <Separator className="my-12" />
-
-        {/* ── Content Management Section ── */}
+        {/* Content Management Section */}
         <ContentManagement />
       </div>
 
-      {/* ── Add / Edit Product Dialog ── */}
+      {/* Add / Edit Product Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl text-foreground">
-              {editingProduct ? 'Edit Product' : 'Add New Product'}
+            <DialogTitle className="font-serif text-xl">
+              {editingProduct ? 'Edit Product' : 'Add Product'}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">
+                Product Image
+              </Label>
+              <div
+                className="relative border-2 border-dashed border-border rounded-lg overflow-hidden cursor-pointer hover:border-accent/50 transition-colors"
+                style={{ minHeight: '140px' }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full object-cover"
+                      style={{ maxHeight: '200px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImagePreview(null);
+                        setForm((prev) => ({ ...prev, image: '' }));
+                      }}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-background transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                    {isUploadingImage ? (
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mb-2" />
+                    ) : (
+                      <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                    )}
+                    <p className="font-sans text-sm text-muted-foreground">
+                      {isUploadingImage ? 'Processing image…' : 'Click to upload image'}
+                    </p>
+                    <p className="font-sans text-xs text-muted-foreground/60 mt-1">
+                      JPG, PNG or WebP — will be resized automatically
+                    </p>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageFileChange}
+              />
+            </div>
+
             {/* Name */}
             <div className="space-y-1.5">
-              <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Product Name *
+              <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">
+                Name *
               </Label>
               <Input
                 value={form.name}
                 onChange={(e) => handleFormChange('name', e.target.value)}
-                placeholder="e.g. Elegant Floral Dress"
+                placeholder="Product name"
                 className="font-sans text-sm"
               />
             </div>
 
             {/* Category */}
             <div className="space-y-1.5">
-              <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+              <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">
                 Category
               </Label>
               <Select
                 value={form.category}
-                onValueChange={(val) => handleFormChange('category', val)}
+                onValueChange={(v) => handleFormChange('category', v as Category)}
               >
                 <SelectTrigger className="font-sans text-sm">
                   <SelectValue />
@@ -732,13 +896,13 @@ export function Admin() {
 
             {/* Description */}
             <div className="space-y-1.5">
-              <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+              <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">
                 Description
               </Label>
               <Textarea
                 value={form.description}
                 onChange={(e) => handleFormChange('description', e.target.value)}
-                placeholder="Describe the product..."
+                placeholder="Product description"
                 className="font-sans text-sm resize-none"
                 rows={3}
               />
@@ -747,7 +911,7 @@ export function Admin() {
             {/* Price & Stock */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+                <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">
                   Price (₹) *
                 </Label>
                 <Input
@@ -761,13 +925,12 @@ export function Admin() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
+                <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">
                   Stock *
                 </Label>
                 <Input
                   type="number"
                   min="0"
-                  step="1"
                   value={form.stock}
                   onChange={(e) => handleFormChange('stock', e.target.value)}
                   placeholder="0"
@@ -778,63 +941,18 @@ export function Admin() {
 
             {/* Sizes */}
             <div className="space-y-1.5">
-              <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Sizes (comma-separated)
+              <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">
+                Sizes
               </Label>
               <Input
                 value={form.sizes}
                 onChange={(e) => handleFormChange('sizes', e.target.value)}
-                placeholder="e.g. S, M, L, XL"
+                placeholder="S, M, L, XL"
                 className="font-sans text-sm"
               />
-            </div>
-
-            {/* Image Upload */}
-            <div className="space-y-1.5">
-              <Label className="font-sans text-xs tracking-studio uppercase text-muted-foreground">
-                Product Image
-              </Label>
-
-              {imagePreview ? (
-                <div className="relative w-full aspect-[3/4] max-h-48 rounded overflow-hidden border border-border bg-secondary">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-background transition-colors"
-                  >
-                    <X className="w-3.5 h-3.5 text-foreground" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingImage}
-                  className="w-full border border-dashed border-border rounded p-6 flex flex-col items-center gap-2 text-muted-foreground hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
-                >
-                  {isUploadingImage ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <Upload className="w-6 h-6" />
-                  )}
-                  <span className="font-sans text-xs">
-                    {isUploadingImage ? 'Processing image…' : 'Click to upload image'}
-                  </span>
-                </button>
-              )}
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageFileChange}
-              />
+              <p className="font-sans text-xs text-muted-foreground">
+                Comma-separated list of available sizes.
+              </p>
             </div>
 
             {/* Form Error */}
@@ -848,17 +966,14 @@ export function Admin() {
 
           <DialogFooter className="gap-2">
             <DialogClose asChild>
-              <Button
-                variant="outline"
-                className="font-sans text-xs tracking-studio uppercase"
-              >
+              <Button variant="outline" className="font-sans text-xs tracking-widest uppercase">
                 Cancel
               </Button>
             </DialogClose>
             <Button
               onClick={handleSubmit}
               disabled={isMutating || isUploadingImage}
-              className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-studio uppercase gap-2"
+              className="bg-accent text-accent-foreground hover:bg-accent/90 font-sans text-xs tracking-widest uppercase gap-2"
             >
               {isMutating ? (
                 <>
@@ -875,13 +990,11 @@ export function Admin() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Delete Confirmation Dialog ── */}
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-serif text-xl text-foreground">
-              Delete Product
-            </AlertDialogTitle>
+            <AlertDialogTitle className="font-serif text-xl">Delete Product</AlertDialogTitle>
             <AlertDialogDescription className="font-sans text-sm text-muted-foreground">
               Are you sure you want to delete{' '}
               <span className="font-medium text-foreground">{deletingProduct?.name}</span>? This
@@ -889,13 +1002,12 @@ export function Admin() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="font-sans text-xs tracking-studio uppercase">
+            <AlertDialogCancel className="font-sans text-xs tracking-widest uppercase">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              disabled={deleteProduct.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-sans text-xs tracking-studio uppercase gap-2"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-sans text-xs tracking-widest uppercase gap-2"
             >
               {deleteProduct.isPending ? (
                 <>

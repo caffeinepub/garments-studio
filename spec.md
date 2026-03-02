@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Allow the currently authenticated user to claim admin privileges when no admin exists yet, and expose a backend function to grant admin roles.
+**Goal:** Fix the Admin panel being permanently stuck on the "Verifying admin access" loading state after Internet Identity authentication.
 
 **Planned changes:**
-- Add a `claimInitialAdmin` (or `grantAdmin`) backend function in `backend/main.mo` that promotes the caller to admin if no admin exists, or restricts the call to an existing admin/canister controller otherwise.
-- Add an `isCallerAdmin` backend query that returns whether the caller has admin rights.
-- On the frontend Admin page, show a "Claim Admin Access" button when no admin exists and the user is authenticated, instead of the access-denied screen.
-- On successful claim, refresh the admin status query so the full admin dashboard becomes visible.
-- Keep the existing access-denied screen (without the claim button) when an admin already exists and the caller is not that admin.
+- Add an `enabled` guard to the admin role check query in `useQueries.ts` so it only runs once the actor and identity are fully initialized
+- Set a defined `staleTime` and `retry` policy on the admin role check query to prevent indefinite retrying
+- Ensure the admin role check query always resolves to a boolean or throws a catchable error, never staying in `isLoading: true` indefinitely
+- Update `Admin.tsx` to correctly read the settled query result and render either the admin dashboard or an "Access Denied" message based on the outcome
 
-**User-visible outcome:** An authenticated user who visits the Admin page when no admin has been assigned can click "Claim Admin Access" to immediately gain admin privileges and access the full admin dashboard.
+**User-visible outcome:** After logging in with an admin account, the Admin page fully loads and displays the admin dashboard. Non-admins see a clear "Access Denied" message. The page never hangs on "Verifying admin access" again.
